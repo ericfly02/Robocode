@@ -53,9 +53,5 @@ public class Robocode extends Robot{
     public void onHitByBullet(HitByBulletEvent e){
         turnLeft(180);
     }
-
-    public void onHitByBullet(HitByBulletEvent e){
-        turnLeft(180);
-    }
     
 }
