@@ -50,9 +50,9 @@ public class RoboCorner extends TeamRobot{
         // Ara volem que el canó giri juntament amb el radar, per tant el activem
         setAdjustRadarForGunTurn(true);
         
-        turnGunLeft(180);
-        if (position==1 || position==3)
-            turnGunLeft(90);
+        //turnGunLeft(180);
+        //if (position==1 || position==3)
+        //    turnGunLeft(180);
         while(true){
             camperState();
         }
@@ -86,11 +86,6 @@ public class RoboCorner extends TeamRobot{
             moveCorner0();
         }
         
-        // Es mou abaix a la dreta
-        else if (x > width/2 && y < height/2){
-            moveCorner3();
-        }
-
         // Es mou adalt a l'esquerra
         else if (x < width/2 && y > height/2){
             moveCorner1();
@@ -99,6 +94,11 @@ public class RoboCorner extends TeamRobot{
         // Es mou adalt a la dreta
         else if (x > width/2 && y > height/2){
             moveCorner2();
+        }
+        
+        // Es mou abaix a la dreta
+        else if (x > width/2 && y < height/2){
+            moveCorner3();
         }
     }
     
@@ -199,12 +199,22 @@ public class RoboCorner extends TeamRobot{
     }   
 
     public void camperState(){
-        turnRight(180);
-        ahead(189);
-        turnRight(180);
-        ahead(189);
-        turnGunRight(90);
-        turnGunLeft(90);
+        if(position == 0 || position == 2){
+            turnLeft(180);
+            ahead(189);
+            turnRight(180);
+            ahead(189);
+            turnLeft(180);
+            turnRight(180);       
+        }
+        else if(position == 1 || position == 3){
+            turnRight(180);
+            ahead(189);
+            turnLeft(180);
+            ahead(189);
+            turnRight(180);
+            turnLeft(180);
+        }
     }
 
     public void onScannedRobot(ScannedRobotEvent e){
