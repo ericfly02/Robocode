@@ -3,6 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package edu.upc.prop.robocode;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import robocode.*;
 
 
@@ -10,7 +13,7 @@ import robocode.*;
  *
  * @author speed
  */
-public class RoboCorner extends AdvancedRobot{
+public class RoboCorner extends TeamRobot{
     
     // Creem les variables privades que necessitem
     private double x;
@@ -22,20 +25,23 @@ public class RoboCorner extends AdvancedRobot{
     private Integer position;
     
     public void run(){
-        goToCorner();
-        setAdjustRadarForRobotTurn(false);
-        setAdjustRadarForGunTurn(true);
-        turnGunLeft(180);
-
-        if (position==1 || position==3)
-            turnGunLeft(90);
-
-        while(true){
-            camperState();
+        try {
+            goToCorner();
+        } catch (IOException ex) {
+            Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
         }
+        while(true){
+            camperState();        
+            setAdjustRadarForRobotTurn(false);
+            setAdjustRadarForGunTurn(true);
+            turnGunLeft(180);
+            if (position==1 || position==3)
+                turnGunLeft(90);
+        }
+
     }
     
-    public void goToCorner(){
+    public void goToCorner() throws IOException{
         x = getX();
         y = getY();
         width = getBattleFieldWidth();
@@ -69,7 +75,7 @@ public class RoboCorner extends AdvancedRobot{
         }
     }
     
-    public void moveCorner0(){
+    public void moveCorner0()throws IOException{
         if(!ocupat[0]){
             broadcastMessage("C0_ocupat"); 
             ocupat[0]=true;  
@@ -88,7 +94,7 @@ public class RoboCorner extends AdvancedRobot{
         }
     }
 
-    public void moveCorner3(){
+    public void moveCorner3()throws IOException{
         if(!ocupat[3]){
             broadcastMessage("C3_ocupat");
             ocupat[3]=true;  
@@ -107,7 +113,7 @@ public class RoboCorner extends AdvancedRobot{
         }
     }
 
-    public void moveCorner1(){
+    public void moveCorner1()throws IOException{
         if(!ocupat[1]){
             broadcastMessage("C1_ocupat");
             ocupat[1]=true;  
@@ -126,7 +132,7 @@ public class RoboCorner extends AdvancedRobot{
         }
     }
 
-    public void moveCorner2(){
+    public void moveCorner2()throws IOException{
         if(!ocupat[2]){
             broadcastMessage("C2_ocupat");
             ocupat[2]=true;
@@ -155,9 +161,10 @@ public class RoboCorner extends AdvancedRobot{
     }
 
     public void onScannedRobot(ScannedRobotEvent e){
-        if (isTeammate(e.getName()){
+        if (isTeammate(e.getName())){
            return;
-       }
+ 
+        }
        fire(1);
     }
 }
