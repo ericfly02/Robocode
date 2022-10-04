@@ -17,24 +17,6 @@ import robocode.*;
 public class RoboCorner extends TeamRobot{
     
     // Creem les variables privades que necessitem
-<<<<<<< HEAD
-    private double x;           // Coordenada x del robot
-    private double y;           // Coordenada y del robot
-    private double width;       // Amplada del camp de batalla
-    private double height;      // Alçada del camp de batalla
-    private double heading;
-    private double gunHeading;
-    private double radarHeading;
-    // Direcció del robot
-    private Boolean[] ocupat;   // Array de booleans que ens dirà si una posició està ocupada o no
-    private Integer position;   // Posició del robot en el camp de batalla
-    
-    public void run(){        
-        setAdjustRadarForRobotTurn(false);
-        // 
-        setAdjustGunForRobotTurn(false);
-        setAdjustRadarForGunTurn(false);
-=======
     private double x;               // Coordenada x del robot
     private double y;               // Coordenada y del robot
     private double width;           // Amplada del camp de batalla
@@ -45,9 +27,12 @@ public class RoboCorner extends TeamRobot{
     private double gunHeading;     // Direcció del canó del robot
     private double radarHeading;   // Direcció del radar del robot
     
+         
     public void run(){        
-        
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
+        setAdjustRadarForRobotTurn(false);
+        // 
+        setAdjustGunForRobotTurn(false);
+        setAdjustRadarForGunTurn(false);
         // En primer lloc el robot s'orienta cap a la seva posició inicial (el corner que està mes a prop)
         try {
             goToCorner();
@@ -55,18 +40,15 @@ public class RoboCorner extends TeamRobot{
             Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
         }
         // Ara no volem que el radar giri juntament amb el robot, per tant el desactivem
-<<<<<<< HEAD
         setAdjustRadarForRobotTurn(true);
         // 
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(false);
-=======
         setAdjustRadarForRobotTurn(false);
         // Ara no volem que el canó giri juntament amb el robot, per tant el desactivem
         setAdjustGunForRobotTurn(false);
         // Ara volem que el canó giri juntament amb el radar, per tant el activem
         setAdjustRadarForGunTurn(true);
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
         
         turnGunLeft(180);
         if (position==1 || position==3)
@@ -74,8 +56,6 @@ public class RoboCorner extends TeamRobot{
         while(true){
             camperState();
         }
-
-
     }
     
     public void goToCorner() throws IOException{
@@ -90,7 +70,6 @@ public class RoboCorner extends TeamRobot{
         Arrays.fill(ocupat, Boolean.FALSE);
 
         // Amb aquesta funció establim que la direccció del radar i la istola serà la mateixa que la direcció del robot
-<<<<<<< HEAD
         /*setAdjustGunForRobotTurn(false);
 =======
         setAdjustGunForRobotTurn(false);
@@ -126,11 +105,8 @@ public class RoboCorner extends TeamRobot{
     public void moveCorner0() throws IOException{
         if(!ocupat[0]){
             broadcastMessage("C0_ocupat"); 
-<<<<<<< HEAD
             //ocupat[0]=true;  
-=======
             ocupat[0]=true;  
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
             position=0;     
             turnRight(270-heading);
             //turnGunRight(270-gunHeading);
@@ -157,15 +133,12 @@ public class RoboCorner extends TeamRobot{
             ocupat[3]=true;  
             position=3;
             turnRight(90-heading);
-<<<<<<< HEAD
             //turnGunRight(90-gunHeading);
             //turnRadarRight(90-radarHeading);
             setAdjustGunForRobotTurn(false);
             setAdjustRadarForRobotTurn(false);
             ahead(width-x-20);
-=======
             ahead(width-x);
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
             turnRight(90);
             ahead(y-20);
         }
@@ -207,15 +180,12 @@ public class RoboCorner extends TeamRobot{
             ocupat[2]=true;
             position=2;
             turnRight(90-heading);
-<<<<<<< HEAD
             //turnGunRight(90-gunHeading);
             //turnRadarRight(90-radarHeading);
             setAdjustGunForRobotTurn(false);
             setAdjustRadarForRobotTurn(false);
             ahead(width-x-20);
-=======
             ahead(width-x);
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
             turnLeft(90);
             ahead(height-y-20);
         }
