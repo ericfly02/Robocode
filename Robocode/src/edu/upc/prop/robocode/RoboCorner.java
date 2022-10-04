@@ -10,7 +10,7 @@ import robocode.*;
  *
  * @author speed
  */
-public class RoboCorner {
+public class RoboCorner extends AdvancedRobot{
     
     // Creem les variables privades que necessitem
     private double x;
@@ -27,7 +27,7 @@ public class RoboCorner {
         setAdjustRadarForGunTurn(true);
         turnGunLeft(180);
 
-        if (position==1 or position==3)
+        if (position==1 || position==3)
             turnGunLeft(90);
 
         while(true){
@@ -80,7 +80,7 @@ public class RoboCorner {
             ahead(y);
         }
         else{
-            if(x<y and !ocupat[1]) moveCorner1();
+            if(x<y && !ocupat[1]) moveCorner1();
             else{
                 if (!ocupat[3]) moveCorner3();
                 else moveCorner2();
@@ -99,7 +99,7 @@ public class RoboCorner {
             ahead(y);
         }
         else{
-            if(x<y and !ocupat[0]) moveCorner0();
+            if(x<y && !ocupat[0]) moveCorner0();
             else{
                 if (!ocupat[2]) moveCorner2();
                 else moveCorner1();
@@ -118,7 +118,7 @@ public class RoboCorner {
             ahead(height-y);
         }
         else{
-            if(x<y and !ocupat[0]) moveCorner0();
+            if(x<y && !ocupat[0]) moveCorner0();
             else{
                 if (!ocupat[3]) moveCorner3();
                 else moveCorner2();
@@ -137,7 +137,7 @@ public class RoboCorner {
             ahead(height-y);
         }
         else{
-            if(x<y and !ocupat[1]) moveCorner1();
+            if(x<y && !ocupat[1]) moveCorner1();
             else{
                 if (!ocupat[3]) moveCorner3();
                 else moveCorner0();
@@ -155,7 +155,7 @@ public class RoboCorner {
     }
 
     public void onScannedRobot(ScannedRobotEvent e){
-        if (isTeammate(e.getName()) {
+        if (isTeammate(e.getName()){
            return;
        }
        fire(1);
