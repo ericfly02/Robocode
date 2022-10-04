@@ -25,23 +25,28 @@ public class RoboCorner extends TeamRobot{
     private Integer position;
     
     public void run(){
+
+        while(true){
+            goToCorner();
+            camperState();
+        }
+        /*
         try {
             goToCorner();
         } catch (IOException ex) {
             Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
         }
-        while(true){
-            camperState();        
-            setAdjustRadarForRobotTurn(false);
-            setAdjustRadarForGunTurn(true);
-            turnGunLeft(180);
-            if (position==1 || position==3)
-                turnGunLeft(90);
-        }
+        setAdjustRadarForRobotTurn(false);
+        setAdjustRadarForGunTurn(true);
+        turnGunLeft(180);
+        if (position==1 || position==3)
+            turnGunLeft(90);
+*/
+
 
     }
     
-    public void goToCorner() throws IOException{
+    public void goToCorner(){
         x = getX();
         y = getY();
         width = getBattleFieldWidth();
@@ -75,9 +80,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
     
-    public void moveCorner0()throws IOException{
+    public void moveCorner0(){
         if(!ocupat[0]){
-            broadcastMessage("C0_ocupat"); 
+            //broadcastMessage("C0_ocupat"); 
             ocupat[0]=true;  
             position=0;     
             turnRight(270-heading);
@@ -94,9 +99,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner3()throws IOException{
+    public void moveCorner3(){
         if(!ocupat[3]){
-            broadcastMessage("C3_ocupat");
+            //broadcastMessage("C3_ocupat");
             ocupat[3]=true;  
             position=3;
             turnRight(heading+90);
@@ -113,9 +118,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner1()throws IOException{
+    public void moveCorner1(){
         if(!ocupat[1]){
-            broadcastMessage("C1_ocupat");
+            //broadcastMessage("C1_ocupat");
             ocupat[1]=true;  
             position=1;
             turnRight(270-heading);
@@ -132,9 +137,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner2()throws IOException{
+    public void moveCorner2(){
         if(!ocupat[2]){
-            broadcastMessage("C2_ocupat");
+            //broadcastMessage("C2_ocupat");
             ocupat[2]=true;
             position=2;
             turnRight(heading+90);
