@@ -4,6 +4,7 @@
  */
 package edu.upc.prop.robocode;
 import java.io.IOException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import robocode.*;
@@ -16,45 +17,57 @@ import robocode.*;
 public class RoboCorner extends TeamRobot{
     
     // Creem les variables privades que necessitem
-    private double x;
-    private double y;
-    private double width;
-    private double height;
-    private double heading;
-    private Boolean[] ocupat;
-    private Integer position;
+    private double x;               // Coordenada x del robot
+    private double y;               // Coordenada y del robot
+    private double width;           // Amplada del camp de batalla
+    private double height;          // Alçada del camp de batalla
+    private double heading;         // Direcció del robot
+    private Boolean[] ocupat;       // Array de booleans que ens dirà si una posició està ocupada o no
+    private Integer position;       // Posició del robot en el camp de batalla
+    private double gunHeading;     // Direcció del canó del robot
+    private double radarHeading;   // Direcció del radar del robot
     
-    public void run(){
-
-        while(true){
-            goToCorner();
-            camperState();
-        }
-        /*
+    public void run(){        
+        
+        // En primer lloc el robot s'orienta cap a la seva posició inicial (el corner que està mes a prop)
         try {
             goToCorner();
         } catch (IOException ex) {
             Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
         }
+        // Ara no volem que el radar giri juntament amb el robot, per tant el desactivem
         setAdjustRadarForRobotTurn(false);
+        // Ara no volem que el canó giri juntament amb el robot, per tant el desactivem
+        setAdjustGunForRobotTurn(false);
+        // Ara volem que el canó giri juntament amb el radar, per tant el activem
         setAdjustRadarForGunTurn(true);
+        
         turnGunLeft(180);
         if (position==1 || position==3)
             turnGunLeft(90);
-*/
+        while(true){
+            camperState();
+        }
 
 
     }
     
-    public void goToCorner(){
-        x = getX();
-        y = getY();
-        width = getBattleFieldWidth();
-        height = getBattleFieldHeight();
-        heading = getHeading();
+    public void goToCorner() throws IOException{
+        x = getX();                         // Obtenim coordenada x del robot
+        y = getY();                         // Obtenim coordenada y del robot
+        width = getBattleFieldWidth();      // Obtenim les dimensions del camp de batalla (amplada)
+        height = getBattleFieldHeight();    // Obtenim les dimensions del camp de batalla (alçada)
+        heading = getHeading();             // Guardem la posició inicial del robot
+        gunHeading = getGunHeading();       // posició del canó
+        radarHeading = getRadarHeading();   // posició del radar
         ocupat = new Boolean[4];
+        Arrays.fill(ocupat, Boolean.FALSE);
 
         // Amb aquesta funció establim que la direccció del radar i la istola serà la mateixa que la direcció del robot
+        setAdjustGunForRobotTurn(false);
+        setAdjustRadarForRobotTurn(false);
+        turnGunLeft(gunHeading-heading);
+        turnRadarLeft(radarHeading-heading);//left gunheading-heading
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForRobotTurn(true);
 
@@ -80,9 +93,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
     
-    public void moveCorner0(){
+    public void moveCorner0() throws IOException{
         if(!ocupat[0]){
-            //broadcastMessage("C0_ocupat"); 
+            broadcastMessage("C0_ocupat"); 
             ocupat[0]=true;  
             position=0;     
             turnRight(270-heading);
@@ -99,12 +112,12 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner3(){
+    public void moveCorner3() throws IOException{
         if(!ocupat[3]){
-            //broadcastMessage("C3_ocupat");
+            broadcastMessage("C3_ocupat");
             ocupat[3]=true;  
             position=3;
-            turnRight(heading+90);
+            turnRight(90-heading);
             ahead(width-x);
             turnRight(90);
             ahead(y);
@@ -118,9 +131,9 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner1(){
+    public void moveCorner1() throws IOException{
         if(!ocupat[1]){
-            //broadcastMessage("C1_ocupat");
+            broadcastMessage("C1_ocupat");
             ocupat[1]=true;  
             position=1;
             turnRight(270-heading);
@@ -137,12 +150,12 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
-    public void moveCorner2(){
+    public void moveCorner2() throws IOException{
         if(!ocupat[2]){
-            //broadcastMessage("C2_ocupat");
+            broadcastMessage("C2_ocupat");
             ocupat[2]=true;
             position=2;
-            turnRight(heading+90);
+            turnRight(90-heading);
             ahead(width-x);
             turnLeft(90);
             ahead(height-y);
