@@ -104,7 +104,7 @@ public class RoboCorner extends TeamRobot{
     
     public void moveCorner0() throws IOException{
         if(!ocupat[0]){
-            broadcastMessage("C0_ocupat"); 
+            broadcastMessage(new Missatge("C0_ocupat")); 
             //ocupat[0]=true;  
             ocupat[0]=true;  
             position=0;     
@@ -129,7 +129,7 @@ public class RoboCorner extends TeamRobot{
 
     public void moveCorner3() throws IOException{
         if(!ocupat[3]){
-            broadcastMessage("C3_ocupat");
+            broadcastMessage(new Missatge("C3_ocupat"));
             ocupat[3]=true;  
             position=3;
             turnRight(90-heading);
@@ -153,7 +153,7 @@ public class RoboCorner extends TeamRobot{
 
     public void moveCorner1() throws IOException{
         if(!ocupat[1]){
-            broadcastMessage("C1_ocupat");
+            broadcastMessage(new Missatge("C1_ocupat"));
             ocupat[1]=true;  
             position=1;
             turnRight(270-heading);
@@ -176,7 +176,7 @@ public class RoboCorner extends TeamRobot{
 
     public void moveCorner2() throws IOException{
         if(!ocupat[2]){
-            broadcastMessage("C2_ocupat");
+            broadcastMessage(new Missatge("C2_ocupat"));
             ocupat[2]=true;
             position=2;
             turnRight(90-heading);
@@ -226,17 +226,19 @@ public class RoboCorner extends TeamRobot{
     }
     
     public void onMessageReceived(MessageEvent e){
-        String m=(String) e.getMessage();
-        switch(m){
-            case "C0_ocupat":
-                ocupat[0]=true;
-            case "C1_ocupat":
-                ocupat[1]=true;
-            case "C2_ocupat":
-                ocupat[2]=true;
-            case "C3_ocupat":
-                ocupat[3]=true;
-            default: 
-        }
+        
+            Missatge M = (Missatge) e.getMessage();
+            String m=M.getText();
+            switch(m){
+                case "C0_ocupat":
+                    ocupat[0]=true;
+                case "C1_ocupat":
+                    ocupat[1]=true;
+                case "C2_ocupat":
+                    ocupat[2]=true;
+                case "C3_ocupat":
+                    ocupat[3]=true;
+                default: 
+            }
     }
 }

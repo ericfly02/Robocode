@@ -1,0 +1,10 @@
+1. Hay que cambiar la manera de ir a los corners:
+	-El kamikaze serà el lider y le comuncara a cada robot donde tiene k ir
+	-Hay q cambiar la implementacion de go to corner para que vaya al corner a pesar de chocarse o tener obstaculos
+	-Hasta que un robocorner no reciba ordenes de donde tiene que ir dará vueltas y disparará a enemigos.
+	
+2. Hay que cambiar la parte del while infinito para hacer siempre un get x get y y get heading... para que al chocar-se o cosas así que no se pierda y haga movimientos tontos
+
+3 Hay que implementar que no se choque contra la pared
+
+4. Hay que implementar un mecanismo pa cuando le disparan 
