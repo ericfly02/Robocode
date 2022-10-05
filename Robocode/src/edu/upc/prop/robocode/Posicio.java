@@ -8,31 +8,29 @@ package edu.upc.prop.robocode;
  *
  * @author roberto
  */
-public class Missatge implements java.io.Serializable {
+public class Posicio {
     
-    private String text;
+    private String name;
     private double x;
     private double y;
-    
-    public Missatge(String m){
-        this.text=m;
+
+    public Posicio(String name, double x, double y) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
     }
-    
-    public Missatge(String m,double X, double Y){
-        this.text=m;
-        this.x=X;
-        this.y=Y;
+
+    public String getName() {
+        return name;
     }
-    
-    public String getText() {
-        return text;
-    }
-    
+
     public double getX() {
         return x;
     }
-    
+
     public double getY() {
         return y;
     }
+    
+    
 }
