@@ -21,17 +21,28 @@ public class RoboCorner extends TeamRobot{
     private double y;               // Coordenada y del robot
     private double width;           // Amplada del camp de batalla
     private double height;          // Alçada del camp de batalla
-    private double heading;         // Direcció del robot
-    private Boolean[] ocupat;       // Array de booleans que ens dirà si una posició està ocupada o no
-    private Integer position;       // Posició del robot en el camp de batalla
+    private double heading;         // Array de booleans que ens dirà si una posició està ocupada o no
+    private Integer corner=4;       // Posició del robot en el camp de batalla | S'inicialitza a quatre però el kamikaze li comunicarà a quin corner ha d'anar {0.1.2.3}
     private double gunHeading;     // Direcció del canó del robot
     private double radarHeading;   // Direcció del radar del robot
-    
+    private String nomLider=null;
          
-    public void run(){        
+    public void run(){   
+        // Mentres els robots no hagin rebut la posició del corner a la que han d'anar, realitzaràn moviments 360º disparant 
+        // a tots els robots que trobin
+//System.out.println("estic aqui");
+        //setAdjustRadarForGunTurn(false);
+        //importante comentar
+            //turnGunRight(360);
+            //execute();
+       //System.out.println("estic aqui"); 
+       
+//turnGunRight(360);
+        // El radar segueix el moviment del cano     
         setAdjustRadarForRobotTurn(false);
-        // 
+        // El cano segueix el moviment del robot
         setAdjustGunForRobotTurn(false);
+        // El radar segueix el moviment del cano
         setAdjustRadarForGunTurn(false);
         // En primer lloc el robot s'orienta cap a la seva posició inicial (el corner que està mes a prop)
         try {
@@ -39,20 +50,19 @@ public class RoboCorner extends TeamRobot{
         } catch (IOException ex) {
             Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // Ara no volem que el radar giri juntament amb el robot, per tant el desactivem
+        // El radar no segueix el moviment del robot
         setAdjustRadarForRobotTurn(true);
-        // 
+        // El canó no segueix el moviment del robot
         setAdjustGunForRobotTurn(true);
+        // El radar segueix el moviment del canó
         setAdjustRadarForGunTurn(false);
+        // El radar segueix el moviment del robot
         setAdjustRadarForRobotTurn(false);
-        // Ara no volem que el canó giri juntament amb el robot, per tant el desactivem
+        // El canó segueix el moviment del robot
         setAdjustGunForRobotTurn(false);
-        // Ara volem que el canó giri juntament amb el radar, per tant el activem
+        // El radar no segueix el moviment del canó
         setAdjustRadarForGunTurn(true);
         
-        //turnGunLeft(180);
-        //if (position==1 || position==3)
-        //    turnGunLeft(180);
         while(true){
             camperState();
         }
@@ -64,142 +74,97 @@ public class RoboCorner extends TeamRobot{
         width = getBattleFieldWidth();      // Obtenim les dimensions del camp de batalla (amplada)
         height = getBattleFieldHeight();    // Obtenim les dimensions del camp de batalla (alçada)
         heading = getHeading();             // Guardem la posició inicial del robot
-        gunHeading = getGunHeading();       // posició del canó
-        radarHeading = getRadarHeading();   // posició del radar
-        ocupat = new Boolean[4];
-        Arrays.fill(ocupat, Boolean.FALSE);
-
-        // Amb aquesta funció establim que la direccció del radar i la istola serà la mateixa que la direcció del robot
-        /*setAdjustGunForRobotTurn(false);
-=======
-        setAdjustGunForRobotTurn(false);
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
-        setAdjustRadarForRobotTurn(false);
-        turnGunLeft(gunHeading-heading);
-        turnRadarLeft(radarHeading-heading);//left gunheading-heading
-        setAdjustGunForRobotTurn(true);
-        setAdjustRadarForRobotTurn(true);
-*/
-
+        //gunHeading = getGunHeading();       // posició del canó
+        //radarHeading = getRadarHeading();   // posició del radar
+        //System.out.println("encara no tinc lider");
+        //turnGunRight(360);
+        while(nomLider==null)execute();//que doni voltes i dispari enemics
+        //System.out.println("era broma si que tinc lider");
+        //System.out.println(nomLider);
+        //turnGunRight(360);
+        sendMessage(nomLider,new Missatge("A quin corner vaig capità?"/*,x,y*/));
+        //System.out.println("Broadcast enviat");
+        //turnGunRight(360);
+        while(corner==4){
+        sendMessage(nomLider,new Missatge("A quin corner vaig capità?"/*,x,y*/));
+        //System.out.println("Broadcast enviat");
+        setTurnGunRight(360);
+        execute();
+        }//igual que dues linies aldamunt
         // Es mou abaix a l'esquerra
-        if (x < width/2 && y < height/2){
+        if (corner==0){
             moveCorner0();
         }
         
         // Es mou adalt a l'esquerra
-        else if (x < width/2 && y > height/2){
+        else if (corner==1){
             moveCorner1();
         }
 
         // Es mou adalt a la dreta
-        else if (x > width/2 && y > height/2){
+        else if (corner==2){
             moveCorner2();
         }
         
         // Es mou abaix a la dreta
-        else if (x > width/2 && y < height/2){
+        else if (corner==3){
             moveCorner3();
         }
     }
     
     public void moveCorner0() throws IOException{
-        if(!ocupat[0]){
-            broadcastMessage(new Missatge("C0_ocupat")); 
-            //ocupat[0]=true;  
-            ocupat[0]=true;  
-            position=0;     
-            turnRight(270-heading);
-            //turnGunRight(270-gunHeading);
-            //turnRadarRight(270-radarHeading);
-            setAdjustGunForRobotTurn(false);
-            setAdjustRadarForRobotTurn(false);
-            ahead(x-20);
-            turnLeft(90);
-            ahead(y-20);
-            //ocupat=
-        }
-        else{
-            if(x<y && !ocupat[1]) moveCorner1();
-            else{
-                if (!ocupat[3]) moveCorner3();
-                else moveCorner2();
-            }
-        }
-    }
-
-    public void moveCorner3() throws IOException{
-        if(!ocupat[3]){
-            broadcastMessage(new Missatge("C3_ocupat"));
-            ocupat[3]=true;  
-            position=3;
-            turnRight(90-heading);
-            //turnGunRight(90-gunHeading);
-            //turnRadarRight(90-radarHeading);
-            setAdjustGunForRobotTurn(false);
-            setAdjustRadarForRobotTurn(false);
-            ahead(width-x-20);
-            ahead(width-x);
-            turnRight(90);
-            ahead(y-20);
-        }
-        else{
-            if(x<y && !ocupat[0]) moveCorner0();
-            else{
-                if (!ocupat[2]) moveCorner2();
-                else moveCorner1();
-            }
-        }
+        x = getX();                         // Obtenim coordenada x del robot
+        y = getY();                         // Obtenim coordenada y del robot
+        heading = getHeading();
+        if(x==20 && y==20)return;
+        turnRight(270-heading);
+        ahead(x-20);
+        turnLeft(90);
+        ahead(y-20);
+        moveCorner0();
     }
 
     public void moveCorner1() throws IOException{
-        if(!ocupat[1]){
-            broadcastMessage(new Missatge("C1_ocupat"));
-            ocupat[1]=true;  
-            position=1;
-            turnRight(270-heading);
-            //turnGunRight(270-gunHeading);
-            //turnRadarRight(270-radarHeading);
-            setAdjustGunForRobotTurn(false);
-            setAdjustRadarForRobotTurn(false);
-            ahead(x-20);
-            turnRight(90);
-            ahead(height-y-20);
-        }
-        else{
-            if(x<y && !ocupat[0]) moveCorner0();
-            else{
-                if (!ocupat[3]) moveCorner3();
-                else moveCorner2();
-            }
-        }
+        x = getX();                         // Obtenim coordenada x del robot
+        y = getY();                         // Obtenim coordenada y del robot
+        heading = getHeading();
+        if(x==20 && y==(height-20))return;
+        turnRight(270-heading);
+        ahead(x-20);
+        turnRight(90);
+        ahead(height-y-20);
+        moveCorner1();
     }
 
     public void moveCorner2() throws IOException{
-        if(!ocupat[2]){
-            broadcastMessage(new Missatge("C2_ocupat"));
-            ocupat[2]=true;
-            position=2;
-            turnRight(90-heading);
-            //turnGunRight(90-gunHeading);
-            //turnRadarRight(90-radarHeading);
-            setAdjustGunForRobotTurn(false);
-            setAdjustRadarForRobotTurn(false);
-            ahead(width-x-20);
-            ahead(width-x);
-            turnLeft(90);
-            ahead(height-y-20);
-        }
-        else{
-            if(x<y && !ocupat[1]) moveCorner1();
-            else{
-                if (!ocupat[3]) moveCorner3();
-                else moveCorner0();
-            }
-        }
+        x = getX();                         // Obtenim coordenada x del robot
+        y = getY();                         // Obtenim coordenada y del robot
+        heading = getHeading();
+        if(x==width-20 && y==height-20)return;
+        turnRight(90-heading);
+        ahead(width-x-20);
+        turnLeft(90);
+        ahead(height-y-20);
+        moveCorner2();
     }   
+    
+    public void moveCorner3() throws IOException{
+        x = getX();                         // Obtenim coordenada x del robot
+        y = getY();                         // Obtenim coordenada y del robot
+        heading = getHeading();
+        if(x==width-20 && y==20)return;
+        turnRight(90-heading);
+        ahead(width-x-20);
+        turnRight(90);
+        ahead(y-20);
+        moveCorner3();
+    }
 
     public void camperState(){
-        if(position == 0 || position == 2){
+        // Si el robot es troba a la posició 0 o 2, fa el moviment sentinella (gira a l'esquerra 180º, es mou 189 posicions, 
+        // torna a girar a la dreta 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
+        // disparar a tots els robots que es trobin al seu voltant
+        if(corner == 0 || corner == 2){
             turnLeft(180);
             ahead(189);
             turnRight(180);
@@ -207,7 +172,11 @@ public class RoboCorner extends TeamRobot{
             turnLeft(180);
             turnRight(180);       
         }
-        else if(position == 1 || position == 3){
+
+        // Si el robot es troba a la posició 1 o 3, fa el moviment sentinella (gira a la dreta 180º, es mou 189 posicions, 
+        // torna a girar a l'esquerra 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
+        // disparar a tots els robots que es trobin al seu voltant
+        else if(corner == 1 || corner == 3){
             turnRight(180);
             ahead(189);
             turnLeft(180);
@@ -222,23 +191,23 @@ public class RoboCorner extends TeamRobot{
            return;
  
         }
-       fire(3);
+       fire(1);
     }
     
     public void onMessageReceived(MessageEvent e){
-        
+        System.out.println("missatge rebut");
             Missatge M = (Missatge) e.getMessage();
             String m=M.getText();
             switch(m){
-                case "C0_ocupat":
-                    ocupat[0]=true;
-                case "C1_ocupat":
-                    ocupat[1]=true;
-                case "C2_ocupat":
-                    ocupat[2]=true;
-                case "C3_ocupat":
-                    ocupat[3]=true;
+                case "Ves al corner":
+                    corner = (int) M.getX();
+                    //ahead(200);
+                case "Soc el líder":
+                    nomLider=e.getSender();
+                    //ahead(200);
                 default: 
+                    //System.out.println(m);
+                    //ahead(200);
             }
     }
 }

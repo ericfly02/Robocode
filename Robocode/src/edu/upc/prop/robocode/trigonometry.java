@@ -10,6 +10,9 @@ import static java.lang.Math.abs;
  * @author speed
  */
 public class trigonometry {
+
+    public trigonometry() {
+    }
     
     
     public double distancia(double x,double y,double x1, double y1){

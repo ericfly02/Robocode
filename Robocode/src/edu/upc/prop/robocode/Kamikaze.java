@@ -29,42 +29,32 @@ public class Kamikaze extends TeamRobot{
     private Integer position;       // Posició del robot en el camp de batalla
     private double gunHeading;     // Direcció del canó del robot
     private double radarHeading;   // Direcció del radar del robot
-    
+    private trigonometry t=new trigonometry();
+    private RobotStatus robotStatus;
          
     public void run(){
-        ini();
-        setAdjustRadarForRobotTurn(false);
-        // 
-        setAdjustGunForRobotTurn(false);
-        setAdjustRadarForGunTurn(false);
-        // En primer lloc el robot s'orienta cap a la seva posició inicial (el corner que està mes a prop)
         try {
-            goToCorner();
+            ini();
         } catch (IOException ex) {
-            Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Kamikaze.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // Ara no volem que el radar giri juntament amb el robot, per tant el desactivem
-        setAdjustRadarForRobotTurn(true);
-        // 
-        setAdjustGunForRobotTurn(true);
-        setAdjustRadarForGunTurn(false);
-        setAdjustRadarForRobotTurn(false);
-        // Ara no volem que el canó giri juntament amb el robot, per tant el desactivem
-        setAdjustGunForRobotTurn(false);
-        // Ara volem que el canó giri juntament amb el radar, per tant el activem
-        setAdjustRadarForGunTurn(true);
         
-        //turnGunLeft(180);
-        //if (position==1 || position==3)
-        //    turnGunLeft(180);
         while(true){
-            camperState();
+            target_kamikaze();
         }
     }
     
     public void ini() throws IOException{
+        broadcastMessage(new Missatge("Soc el líder"));
+        //ahead(200);///////////////////
         posicions = new Posicio[4];
-        while(posicionsRebudes<4) ;//estatInicial()  fer voltes i disparar enemics sense moure's
+        while(posicionsRebudes<4){
+           //broadcastMessage(new Missatge("Soc el líder"));
+           setTurnRight(360);
+           execute();
+        //ahead(200);
+           // 
+        }//estatInicial()  fer voltes i disparar enemics sense moure's
         enviaPosicions();
     }
     
@@ -73,7 +63,7 @@ public class Kamikaze extends TeamRobot{
         Integer posicio = 7;
         for(int i = 0;i<4;++i){
             if(posicions[i]!=null){
-                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)0);
+                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)0);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -85,7 +75,7 @@ public class Kamikaze extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i]!=null){
-                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)800);
+                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)800);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -97,7 +87,7 @@ public class Kamikaze extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i]!=null){
-                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)800);
+                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)800);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -109,7 +99,7 @@ public class Kamikaze extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i]!=null){
-                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)0);
+                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)0);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -121,6 +111,7 @@ public class Kamikaze extends TeamRobot{
     }
     
     public void goToCorner() throws IOException{
+        
         x = getX();                         // Obtenim coordenada x del robot
         y = getY();                         // Obtenim coordenada y del robot
         width = getBattleFieldWidth();      // Obtenim les dimensions del camp de batalla (amplada)
@@ -132,16 +123,7 @@ public class Kamikaze extends TeamRobot{
         Arrays.fill(ocupat, Boolean.FALSE);
 
         // Amb aquesta funció establim que la direccció del radar i la istola serà la mateixa que la direcció del robot
-        /*setAdjustGunForRobotTurn(false);
-=======
-        setAdjustGunForRobotTurn(false);
->>>>>>> aa4e67f7391e6f8caca4e9139c99df1d8d9e01e5
-        setAdjustRadarForRobotTurn(false);
-        turnGunLeft(gunHeading-heading);
-        turnRadarLeft(radarHeading-heading);//left gunheading-heading
-        setAdjustGunForRobotTurn(true);
-        setAdjustRadarForRobotTurn(true);
-*/
+        
 
         // Es mou abaix a l'esquerra
         if (x < width/2 && y < height/2){
@@ -260,40 +242,61 @@ public class Kamikaze extends TeamRobot{
         }
     }   
 
-    public void camperState(){
-        if(position == 0 || position == 2){
-            turnLeft(180);
-            ahead(189);
-            turnRight(180);
-            ahead(189);
-            turnLeft(180);
-            turnRight(180);       
-        }
-        else if(position == 1 || position == 3){
-            turnRight(180);
-            ahead(189);
-            turnLeft(180);
-            ahead(189);
-            turnRight(180);
-            turnLeft(180);
-        }
-    }
+    public void target_kamikaze(){
+        // En aquesta funció el radar gira 360º i quan troba un enemic, el segueix mitjançant la funció onScannedRobot        
+        // El radar segueix el moviment del cano
+        setAdjustRadarForGunTurn(false);
+        turnGunRight(360);
+execute();
+}
 
-    public void onScannedRobot(ScannedRobotEvent e){
+   
+    public void onStatus(StatusEvent e) {
+        this.robotStatus = e.getStatus();
+    }    
+
+    public void onScannedRobot(ScannedRobotEvent e) {
+
+        // Si el robot escanejat és del nostre equip, no fem res
         if (isTeammate(e.getName())){
-           return;
- 
+            return;
+         }
+        
+        // Si el robot escanejat és un enemic, el seguim
+        else{
+            // Si el robot escanejat és un enemic, el seguim
+            if (e.getDistance() < 100){
+                // Si l'enemic està a una distància inferior a 100, el seguim
+                // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
+                setTurnRight(e.getBearing());
+                setAhead(e.getDistance() - 100);
+            }
+            else{
+                // Si l'enemic està a una distància superior a 100, el seguim
+                setTurnRight(e.getBearing());
+                setAhead(e.getDistance() - 100);
+            }
         }
-       fire(3);
     }
     
     public void onMessageReceived(MessageEvent e){
-        
-            Missatge M = (Missatge) e.getMessage();
-            String m=M.getText();
-            switch(m){
-                case "A quin corner vaig capità?":
-                    
-            }
+                if(robotllegit(e.getSender()))return;
+                System.out.println("missatge rebut");
+turnRight(360);
+                Missatge M = (Missatge) e.getMessage();
+                String m=M.getText();
+                switch(m){
+                    case "A quin corner vaig capità?":
+                        posicions[posicionsRebudes]=new Posicio(e.getSender(), M.getX(), M.getY());//obtener nombre y posicion y agregarlo al array posicions
+                        ++posicionsRebudes;// incrementar posicionsRebudes
+                        System.out.println("posicions rebudes incrementat, he afegit a "+e.getSender());
+    }
+    }
+    
+    public Boolean robotllegit(String n){
+        for(int i=0;i<4;++i){
+        if(posicions[i]!=null && posicions[i].getName()==n)return true;
+        }
+        return false;
     }
 }
