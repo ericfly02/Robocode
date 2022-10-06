@@ -35,4 +35,5 @@ public class Missatge implements java.io.Serializable {
     public double getY() {
         return y;
     }
+    
 }

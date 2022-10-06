@@ -259,6 +259,7 @@ execute();
 
         // Si el robot escanejat és del nostre equip, no fem res
         if (isTeammate(e.getName())){
+            //si esta molt aprop girem 90 graus dreta i avancem
             return;
          }
         
@@ -279,19 +280,6 @@ execute();
         }
     }
     
-    public void onMessageReceived(MessageEvent e){
-                if(robotllegit(e.getSender()))return;
-                System.out.println("missatge rebut");
-turnRight(360);
-                Missatge M = (Missatge) e.getMessage();
-                String m=M.getText();
-                switch(m){
-                    case "A quin corner vaig capità?":
-                        posicions[posicionsRebudes]=new Posicio(e.getSender(), M.getX(), M.getY());//obtener nombre y posicion y agregarlo al array posicions
-                        ++posicionsRebudes;// incrementar posicionsRebudes
-                        System.out.println("posicions rebudes incrementat, he afegit a "+e.getSender());
-    }
-    }
     
     public Boolean robotllegit(String n){
         for(int i=0;i<4;++i){

@@ -8,3 +8,17 @@
 3 Hay que implementar que no se choque contra la pared
 
 4. Hay que implementar un mecanismo pa cuando le disparan 
+
+///////////////////
+ ideas para equipoo de competicion:
+ algunas funiones utiles:
+ 	isMyFault()
+		//Checks if your robot was moving towards the robot that was hit.
+	getEnergy()
+		//Returns the amount of energy of the robot you hit.
+	doNothing()
+		//Do nothing this turn, meaning that the robot will skip it's turn.
+	onHitRobot(HitRobotEvent event)
+		//This method is called when your robot collides with another robot.
+	scan()
+		//Scans for other robots.

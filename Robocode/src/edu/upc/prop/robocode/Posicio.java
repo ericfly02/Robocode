@@ -13,11 +13,21 @@ public class Posicio {
     private String name;
     private double x;
     private double y;
+    private double z=4;
 
-    public Posicio(String name, double x, double y) {
+    public double getZ() {
+        return z;
+    }
+
+    public Posicio(String name, double x, double y,double z) {
         this.name = name;
         this.x = x;
         this.y = y;
+        this.z=z;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
     }
 
     public String getName() {
