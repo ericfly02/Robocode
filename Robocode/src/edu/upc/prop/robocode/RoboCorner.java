@@ -170,7 +170,34 @@ public class RoboCorner extends TeamRobot{
         ahead(y-20);
         moveCorner3();
     }
+    public void camperState(){
+        // Si el robot es troba a la posició 0 o 2, fa el moviment sentinella (gira a l'esquerra 180º, es mou 189 posicions, 
+        // torna a girar a la dreta 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
+        // disparar a tots els robots que es trobin al seu voltant
 
+        if(corner == 0 || corner == 2){
+            setAdjustRadarForGunTurn(false);
+            ahead(189);
+            turnGunRight(90);
+            turnGunLeft(90);  
+            back(189);
+            turnGunRight(270);
+            turnGunLeft(180);       
+        }
+
+        // Si el robot es troba a la posició 1 o 3, fa el moviment sentinella (gira a la dreta 180º, es mou 189 posicions, 
+        // torna a girar a l'esquerra 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
+        // disparar a tots els robots que es trobin al seu voltant
+        else if(corner == 1 || corner == 3){
+            setAdjustRadarForGunTurn(false);
+            ahead(189);
+            turnGunRight(180);
+            turnGunLeft(180);  
+            back(189);
+            turnGunRight(180);
+            turnGunLeft(180);  
+        }
+    }/*
     public void camperState(){
         // Si el robot es troba a la posició 0 o 2, fa el moviment sentinella (gira a l'esquerra 180º, es mou 189 posicions, 
         // torna a girar a la dreta 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
@@ -180,8 +207,8 @@ public class RoboCorner extends TeamRobot{
             ahead(189);
             turnRight(180);
             ahead(189);
-            turnLeft(180);
-            turnRight(180);       
+            turnLeft(90);
+            turnRight(90);       
         }
 
         // Si el robot es troba a la posició 1 o 3, fa el moviment sentinella (gira a la dreta 180º, es mou 189 posicions, 
@@ -192,10 +219,11 @@ public class RoboCorner extends TeamRobot{
             ahead(189);
             turnLeft(180);
             ahead(189);
-            turnRight(180);
-            turnLeft(180);
+            turnRight(90);
+            turnLeft(90);
         }
-    }
+        doNothing();
+    }*/
 
     public void onScannedRobot(ScannedRobotEvent e){
         if (isTeammate(e.getName())){
@@ -204,19 +232,21 @@ public class RoboCorner extends TeamRobot{
         }else{
             if(kamikaze){
                 // Si el robot escanejat és un enemic, el seguim
-                if (e.getDistance() < 100){
+                if (e.getDistance() < 0){
                     // Si l'enemic està a una distància inferior a 100, el seguim
                     // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
                     setTurnRight(e.getBearing());
-                    setAhead(e.getDistance() - 100);
+                    setAhead(e.getDistance());
+                    fire(3);
                 }
                 else{
                     // Si l'enemic està a una distància superior a 100, el seguim
                     setTurnRight(e.getBearing());
-                    setAhead(e.getDistance() - 100);
+                    setAhead(e.getDistance());
+                    fire(3);
                 }
             }else{
-                fire(1);
+                fire(3);
             }
         }
     }
@@ -343,7 +373,7 @@ public class RoboCorner extends TeamRobot{
         // El radar segueix el moviment del cano
         setAdjustRadarForGunTurn(false);
         turnGunRight(360);
-        execute();
+        doNothing();
     }
     
     public Boolean robotllegit(String n){
