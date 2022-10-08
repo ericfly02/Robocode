@@ -187,8 +187,8 @@ public class RoboCorner extends TeamRobot{
         safeAhead(width-x-20);
         turnRight(90);
         safeAhead(y-20);*/
-        moveCorner3();
-        turnRight(180-getHeading());
+        //moveCorner0();
+        turnRight(360-getHeading());
     }
 
     public void moveCorner1() throws IOException{
@@ -201,7 +201,7 @@ public class RoboCorner extends TeamRobot{
         safeAhead(width-x-20);
         turnRight(90);
         safeAhead(y-20);*/
-        moveCorner1();
+        //moveCorner1();
         turnRight(180-getHeading());
     }
 
@@ -215,7 +215,7 @@ public class RoboCorner extends TeamRobot{
         safeAhead(width-x-20);
         turnRight(90);
         safeAhead(y-20);*/
-        moveCorner2();
+        //moveCorner2();
         turnRight(180-getHeading());
     }   
     
@@ -238,8 +238,8 @@ public class RoboCorner extends TeamRobot{
         safeAhead(width-x-20);
         turnRight(90);
         safeAhead(y-20);*/
-        moveCorner3();
-        turnRight(180-getHeading());
+        //moveCorner3();
+        turnRight(360-getHeading());
     }
     public void camperState(){
         // Si el robot es troba a la posició 0 o 2, fa el moviment sentinella (gira a l'esquerra 180º, es mou 189 posicions, 
@@ -248,12 +248,13 @@ public class RoboCorner extends TeamRobot{
 
         if(corner == 0 || corner == 2){
             setAdjustRadarForGunTurn(false);
-            safeAhead(189);
+            // Obtenim el heading del robot i calculam el heading que ha de tenir per mirar cap a la posició 1 o 3
             turnGunRight(90);
             turnGunLeft(90);  
+            safeAhead(189);
+            turnGunRight(180);
+            turnGunLeft(180); 
             back(189);
-            turnGunRight(270);
-            turnGunLeft(180);       
         }
 
         // Si el robot es troba a la posició 1 o 3, fa el moviment sentinella (gira a la dreta 180º, es mou 189 posicions, 
@@ -261,12 +262,12 @@ public class RoboCorner extends TeamRobot{
         // disparar a tots els robots que es trobin al seu voltant
         else if(corner == 1 || corner == 3){
             setAdjustRadarForGunTurn(false);
+            turnGunLeft(90);
+            turnGunRight(90); 
             safeAhead(189);
-            turnGunRight(180);
-            turnGunLeft(180);  
+            turnGunLeft(180);
+            turnGunRight(180);   
             back(189);
-            turnGunRight(180);
-            turnGunLeft(180);  
         }
     }/*
     public void camperState(){
