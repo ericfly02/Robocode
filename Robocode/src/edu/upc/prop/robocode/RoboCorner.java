@@ -4,6 +4,7 @@
  */
 package edu.upc.prop.robocode;
 import java.io.IOException;
+import static java.lang.Math.abs;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,20 +36,16 @@ public class RoboCorner extends TeamRobot{
     /////////////variables del kamikaze exclusivament
     private Posicio[] posicions;
     private Integer posicionsRebudes = 0;
-    private Boolean[] ocupat;       // Array de booleans que ens dirà si una posició està ocupada o no
-    private trigonometry t=new trigonometry();
-    private RobotStatus robotStatus;
     private Integer rotacio=1;
-    private Integer companysVius=4;
     
     public void run(){
         kamikaze=kamikaze();
         lider=(getName().contains("(1)"));
         if(kamikaze){
             try {
-                iniKamikaze();
+                enviaPosicions();
             } catch (IOException ex) {
-                Logger.getLogger(Kamikaze.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             while(true){
@@ -98,8 +95,8 @@ public class RoboCorner extends TeamRobot{
         execute();
         xi = getX();    // Obtenim coordenada x del robot
         yi = getY();    // Obtenim coordenada y del robot
-        posicions = new Posicio[companysVius]; // Inicialitzem l'array de posicions
-        for(int i=0;i<companysVius;++i)posicions[i]=null;
+        posicions = new Posicio[4]; // Inicialitzem l'array de posicions
+        for(int i=0;i<4;++i)posicions[i]=null;
         doNothing();
         try {
             broadcastMessage(new Missatge("Estic aquí",xi,yi));
@@ -108,7 +105,7 @@ public class RoboCorner extends TeamRobot{
         }
         doNothing();
         
-        while(posicionsRebudes<companysVius){
+        while(posicionsRebudes<4){
             try {
                 broadcastMessage(new Missatge("Necessito dades"));
             } catch (IOException ex) {
@@ -120,10 +117,10 @@ public class RoboCorner extends TeamRobot{
     }
     
     public Boolean socKamikaze(){
-        double distance=t.distancia(xi,yi, 500, 400);
+        double distance=distancia(xi,yi, 500, 400);
         nomLider=getName();
-        for(int i=0;i<companysVius;++i){
-            double dist=t.distancia(posicions[i].getX(), posicions[i].getY(), 500, 400);
+        for(int i=0;i<4;++i){
+            double dist=distancia(posicions[i].getX(), posicions[i].getY(), 500, 400);
             if(distance>dist){
                 nomLider=posicions[i].getName();
                 distance=dist;
@@ -334,14 +331,12 @@ public class RoboCorner extends TeamRobot{
                 
             }
             else{
-                //if(!millora2 || lider){
                     double enemyBearing = getHeading() + e.getBearing();
                     double dx = getX() + e.getDistance() * Math.sin(Math.toRadians(enemyBearing))-getX();
                     double dy = getY() + e.getDistance() * Math.cos(Math.toRadians(enemyBearing))-getY();
                     double theta = Math.toDegrees(Math.atan2(dx, dy));
                     turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
                     fire(3);
-                //}
             }
         }
     }
@@ -403,29 +398,13 @@ public class RoboCorner extends TeamRobot{
         return 4;
     }
     
-    public void RobotDeathEvent(String robotName){
-        System.out.println("S'ha mort "+robotName+" de cancer.");
-        /*if(robotName==nomLider){
-            posicionsRebudes=0;
-            lider=kamikaze();
-        }
-        --companysVius;*/
-    }
-    
-     public void onStatus(StatusEvent e) {
-        this.robotStatus = e.getStatus();
-    } 
-    
-    public void iniKamikaze() throws IOException{
-        enviaPosicions();
-    }
     
     public void enviaPosicions() throws IOException{
         double distancia,distanciaMin=2000000;
         Integer posicio = 7;
         for(int i = 0;i<4;++i){
             if(posicions[i].getZ()==4){
-                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)0);
+                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)0);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -437,7 +416,7 @@ public class RoboCorner extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i].getZ()==4){
-                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)800);
+                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)0,(double)800);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -449,7 +428,7 @@ public class RoboCorner extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i].getZ()==4){
-                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)800);
+                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)800);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -461,7 +440,7 @@ public class RoboCorner extends TeamRobot{
         distanciaMin=2000000;
         for(int i = 0;i<4;++i){
             if(posicions[i].getZ()==4){
-                distancia=t.distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)0);
+                distancia=distancia(posicions[i].getX(),posicions[i].getY(),(double)1000,(double)0);
                 if(distancia<distanciaMin){
                     distanciaMin=distancia;
                     posicio=i;
@@ -479,13 +458,6 @@ public class RoboCorner extends TeamRobot{
         if (rotacio==1)turnGunRight(360);
         else turnGunLeft(360);
         doNothing();
-    }
-    
-    public Boolean robotllegit(String n){
-        for(int i=0;i<4;++i){
-        if(posicions[i]!=null && posicions[i].getName()==n)return true;
-        }
-        return false;
     }
         
     public void onHitRobot(HitRobotEvent e) {
@@ -525,5 +497,10 @@ public class RoboCorner extends TeamRobot{
         }
     }
 
+    public double distancia(double x,double y,double x1, double y1){
+    
+        return abs((x-x1))+abs((y-y1));
+    
+    }
 }
 
