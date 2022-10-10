@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import robocode.*;
+import static robocode.util.Utils.normalRelativeAngleDegrees;
 
 
 /**
@@ -29,16 +30,20 @@ public class RoboCorner extends TeamRobot{
     private double radarHeading;   // Direcció del radar del robot
     private String nomLider=null;
     private Boolean kamikaze=false;
+    private Boolean lider=false;
+    private Boolean millora2=true;  //si es true tots apuntaran a un mateix objectiu, si es false atacaran sense la millora 2 aplicada.
     /////////////variables del kamikaze exclusivament
     private Posicio[] posicions;
     private Integer posicionsRebudes = 0;
     private Boolean[] ocupat;       // Array de booleans que ens dirà si una posició està ocupada o no
-    private Integer position;       // Posició del robot en el camp de batalla
     private trigonometry t=new trigonometry();
     private RobotStatus robotStatus;
+    private Integer rotacio=1;
+    private Integer companysVius=4;
     
     public void run(){
         kamikaze=kamikaze();
+        lider=(getName().contains("(1)"));
         if(kamikaze){
             try {
                 iniKamikaze();
@@ -93,8 +98,8 @@ public class RoboCorner extends TeamRobot{
         execute();
         xi = getX();    // Obtenim coordenada x del robot
         yi = getY();    // Obtenim coordenada y del robot
-        posicions = new Posicio[4]; // Inicialitzem l'array de posicions
-        for(int i=0;i<4;++i)posicions[i]=null;
+        posicions = new Posicio[companysVius]; // Inicialitzem l'array de posicions
+        for(int i=0;i<companysVius;++i)posicions[i]=null;
         doNothing();
         try {
             broadcastMessage(new Missatge("Estic aquí",xi,yi));
@@ -103,7 +108,7 @@ public class RoboCorner extends TeamRobot{
         }
         doNothing();
         
-        while(posicionsRebudes<4){
+        while(posicionsRebudes<companysVius){
             try {
                 broadcastMessage(new Missatge("Necessito dades"));
             } catch (IOException ex) {
@@ -117,7 +122,7 @@ public class RoboCorner extends TeamRobot{
     public Boolean socKamikaze(){
         double distance=t.distancia(xi,yi, 500, 400);
         nomLider=getName();
-        for(int i=0;i<4;++i){
+        for(int i=0;i<companysVius;++i){
             double dist=t.distancia(posicions[i].getX(), posicions[i].getY(), 500, 400);
             if(distance>dist){
                 nomLider=posicions[i].getName();
@@ -185,6 +190,7 @@ public class RoboCorner extends TeamRobot{
         if(x==20 && y==20)return;
         goTo(20,20,true);
         turnRight(360-getHeading());
+        turnGunRight(360-getGunHeading());
     }
 
     public void moveCorner1() throws IOException{
@@ -194,6 +200,7 @@ public class RoboCorner extends TeamRobot{
         if(x==20 && y==(height-20))return;
         goTo(20,getBattleFieldHeight()-20,false);
         turnRight(180-getHeading());
+        turnGunRight(180-getGunHeading());
     }
 
     public void moveCorner2() throws IOException{
@@ -203,6 +210,7 @@ public class RoboCorner extends TeamRobot{
         if(x==width-20 && y==height-20)return;
         goTo(getBattleFieldWidth()-20,getBattleFieldHeight()-20,false);
         turnRight(180-getHeading());
+        turnGunRight(180-getGunHeading());
     }   
     
     public void goTo(double X, double Y,Boolean abaix){
@@ -210,7 +218,13 @@ public class RoboCorner extends TeamRobot{
         double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
         double headingg = Math.toDegrees(Math.atan(mvx/mvy));
         if (abaix)headingg+=180;
-        turnRight(headingg-getHeading());
+        if(corner==2)headingg=headingg+360;
+        if(corner==3)headingg=headingg-360;
+        if(corner%2==0){
+            turnRight(headingg-getHeading());
+        }else{
+            turnLeft(-headingg+getHeading());
+        }
         ahead(distance);
     }
     
@@ -219,13 +233,15 @@ public class RoboCorner extends TeamRobot{
         y = getY();                         // Obtenim coordenada y del robot
         if(x==width-20 && y==20)return;
         goTo(getBattleFieldWidth()-20,20,true);
-        turnRight(360-getHeading());
+        turnRight(-getHeading()+360);
+        turnGunRight(-getGunHeading());
     }
     public void camperState() throws IOException{
         // Si el robot es troba a la posició 0 o 2, fa el moviment sentinella (gira a l'esquerra 180º, es mou 189 posicions, 
         // torna a girar a la dreta 180º i es mou 189 posicions) un cop realitzat el moviment sentinella, executa un gir de 180º per
         // disparar a tots els robots que es trobin al seu voltant
-
+        setTurnRadarRight(360000);
+        execute();
         if(corner == 0 || corner == 2){
             setAdjustRadarForGunTurn(false);
             // Obtenim el heading del robot i calculam el heading que ha de tenir per mirar cap a la posició 1 o 3
@@ -290,24 +306,42 @@ public class RoboCorner extends TeamRobot{
            return;
  
         }else{
+            if(lider && millora2){
+                    double enemyBearing = getHeading() + e.getBearing();
+                    double dx = getX() + e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
+                    double dy = getY() + e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
+                    try {
+                        broadcastMessage(new Missatge("Ataca",dx,dy));
+                    } catch (IOException ex) {
+                        Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             if(kamikaze){
-                // Si el robot escanejat és un enemic, el seguim
-                if (e.getDistance() < 0){
-                    // Si l'enemic està a una distància inferior a 100, el seguim
-                    // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
-                    setTurnRight(e.getBearing());
-                    setAhead(e.getDistance());
-                    fire(3);
-                }
-                else{
-                    // Si l'enemic està a una distància superior a 100, el seguim
-                    setTurnRight(e.getBearing());
-                    setAhead(e.getDistance());
-                    fire(3);
-                }
+                    // Si el robot escanejat és un enemic, el seguim
+                    if (e.getDistance() < 0){
+                        // Si l'enemic està a una distància inferior a 100, el seguim
+                        // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
+                        setTurnRight(e.getBearing());
+                        setAhead(e.getDistance());
+                        fire(3);
+                    }
+                    else{
+                        // Si l'enemic està a una distància superior a 100, el seguim
+                        setTurnRight(e.getBearing());
+                        setAhead(e.getDistance());
+                        fire(3);
+                    }
+                
             }
             else{
-                fire(3);
+                //if(!millora2 || lider){
+                    double enemyBearing = getHeading() + e.getBearing();
+                    double dx = getX() + e.getDistance() * Math.sin(Math.toRadians(enemyBearing))-getX();
+                    double dy = getY() + e.getDistance() * Math.cos(Math.toRadians(enemyBearing))-getY();
+                    double theta = Math.toDegrees(Math.atan2(dx, dy));
+                    turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
+                    fire(3);
+                //}
             }
         }
     }
@@ -339,6 +373,13 @@ public class RoboCorner extends TeamRobot{
                         sendMessage(e.getSender(),new Missatge("Ves al corner",posicio(e.getSender()),(double)0));
                     }
                     break;
+                case "Ataca":
+                    double dx=M.getX()-getX();
+                    double dy=M.getY()-getY();
+                    double theta = Math.toDegrees(Math.atan2(dx, dy));
+                    turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
+                    fire(3);
+                    break;
                 default:
                     break;
             }
@@ -362,6 +403,14 @@ public class RoboCorner extends TeamRobot{
         return 4;
     }
     
+    public void RobotDeathEvent(String robotName){
+        System.out.println("S'ha mort "+robotName+" de cancer.");
+        /*if(robotName==nomLider){
+            posicionsRebudes=0;
+            lider=kamikaze();
+        }
+        --companysVius;*/
+    }
     
      public void onStatus(StatusEvent e) {
         this.robotStatus = e.getStatus();
@@ -427,7 +476,8 @@ public class RoboCorner extends TeamRobot{
         // En aquesta funció el radar gira 360º i quan troba un enemic, el segueix mitjançant la funció onScannedRobot        
         // El radar segueix el moviment del cano
         setAdjustRadarForGunTurn(false);
-        turnGunRight(360);
+        if (rotacio==1)turnGunRight(360);
+        else turnGunLeft(360);
         doNothing();
     }
     
@@ -439,10 +489,34 @@ public class RoboCorner extends TeamRobot{
     }
         
     public void onHitRobot(HitRobotEvent e) {
+        
         if(isTeammate(e.getName())){
             turnRight(90);
             ahead(30);
         }else{
+            if(kamikaze){
+		if (e.getBearing() >= 0) {
+			rotacio = 1;
+		} else {
+			rotacio = -1;
+		}
+		turnRight(e.getBearing());
+
+		// Determine a shot that won't kill the robot...
+		// We want to ram him instead for bonus points
+		if (e.getEnergy() > 16) {
+			fire(3);
+		} else if (e.getEnergy() > 10) {
+			fire(2);
+		} else if (e.getEnergy() > 4) {
+			fire(1);
+		} else if (e.getEnergy() > 2) {
+			fire(.5);
+		} else if (e.getEnergy() > .4) {
+			fire(.1);
+		}
+		ahead(40);
+            }
             if (e.getBearing() > -10 && e.getBearing() < 10) {
                 fire(3);
             }else{
