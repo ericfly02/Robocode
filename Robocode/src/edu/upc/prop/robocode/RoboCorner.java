@@ -32,8 +32,7 @@ public class RoboCorner extends TeamRobot{
     private String nomLider=null;
     private Boolean kamikaze=false;
     private Boolean lider=false;
-    private Boolean millora2=true;  //si es true tots apuntaran a un mateix objectiu, si es false atacaran sense la millora 2 aplicada.
-    /////////////variables del kamikaze exclusivament
+    private Boolean millora2=false;  //si es true tots apuntaran a un mateix objectiu, si es false atacaran sense la millora 2 aplicada.
     private Posicio[] posicions;
     private Integer posicionsRebudes = 0;
     private Integer rotacio=1;
@@ -499,7 +498,7 @@ public class RoboCorner extends TeamRobot{
 
     public double distancia(double x,double y,double x1, double y1){
     
-        return abs((x-x1))+abs((y-y1));
+        return Math.sqrt(Math.pow(x-x1,2)+Math.pow(y-y1,2));
     
     }
 }
