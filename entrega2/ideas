@@ -1,0 +1,28 @@
+1. Hay que cambiar la manera de ir a los corners:
+	-El kamikaze serà el lider y le comuncara a cada robot donde tiene k ir
+	-Hay q cambiar la implementacion de go to corner para que vaya al corner a pesar de chocarse o tener obstaculos
+	-Hasta que un robocorner no reciba ordenes de donde tiene que ir dará vueltas y disparará a enemigos.
+	
+2. Hay que cambiar la parte del while infinito para hacer siempre un get x get y y get heading... para que al chocar-se o cosas así que no se pierda y haga movimientos tontos
+
+3 Hay que implementar que no se choque contra la pared
+
+4. Hay que implementar un mecanismo pa cuando le disparan 
+
+///////////////////
+ ideas para equipoo de competicion:
+ algunas funiones utiles:
+ 	isMyFault()
+		//Checks if your robot was moving towards the robot that was hit.
+	getEnergy()
+		//Returns the amount of energy of the robot you hit.
+	doNothing()
+		//Do nothing this turn, meaning that the robot will skip it's turn.
+	onHitRobot(HitRobotEvent event)
+		//This method is called when your robot collides with another robot.
+	scan()
+		//Scans for other robots.
+		
+		
+1. que en corner ataque bien el cañon
+2. apuntar antes de disparar
