@@ -11,46 +11,55 @@ package edu.upc.prop.robocode;
 public class Posicio {
     
     private String name;    // Nom del robot 
-    private double xi;      // Posiocio inicial x del robot
-    private double yi;      // Posiocio inicial y del robot
-    private double x;       // Posiocio x a la que ha de dirigir-se el robot
-    private double y;       // Posiocio y a la que ha de dirigir-se el robot
+    private Double xi;      // Posiocio inicial x del robot
+    private Double yi;      // Posiocio inicial y del robot
+    private Double x;       // Posiocio x a la que ha de dirigir-se el robot
+    private Double y;       // Posiocio y a la que ha de dirigir-se el robot
+    private Boolean preparat;
 
-    public Posicio(String name, double xi, double yi) {
+    public Posicio(String name, Double xi, Double yi) {
         this.name = name;
         this.xi = xi;
         this.yi = yi;
-        this.x=0;
-        this.y=0;
+        this.x=0.0;
+        this.y=0.0;
+        this.preparat=false;
     }
 
     public String getName() {
         return name;
     }
 
-    public double getXi() {
+    public Double getXi() {
         return xi;
     }
 
-    public double getYi() {
+    public Double getYi() {
         return yi;
     }
 
-    public double getX() {
+    public Double getX() {
         return x;
     }
 
-    public double getY() {
+    public Double getY() {
         return y;
     }
 
-    public void setX(double x) {
+    public void setX(Double x) {
         this.x = x;
     }
 
-    public void setY(double y) {
+    public void setY(Double y) {
         this.y = y;
     }
     
+    public Boolean isReady() {
+        return preparat;
+    }
+
+    public void jaEstaPreparat() {
+        preparat=true;
+    }
     
 }

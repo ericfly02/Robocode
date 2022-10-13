@@ -11,12 +11,12 @@ package edu.upc.prop.robocode;
 public class Missatge implements java.io.Serializable {
     
     private String text;
-    private double x;
-    private double y;
-    private double z;
-    private double t;
+    private Double x;
+    private Double y;
+    private Double z;
+    private Double t;
 
-    public Missatge(String text, double x, double y, double z, double t) {
+    public Missatge(String text, Double x, Double y, Double z, Double t) {
         this.text = text;
         this.x = x;
         this.y = y;
@@ -24,11 +24,11 @@ public class Missatge implements java.io.Serializable {
         this.t = t;
     }
 
-    public double getZ() {
+    public Double getZ() {
         return z;
     }
 
-    public double getT() {
+    public Double getT() {
         return t;
     }
     
@@ -36,7 +36,7 @@ public class Missatge implements java.io.Serializable {
         this.text=m;
     }
     
-    public Missatge(String m,double X, double Y){
+    public Missatge(String m,Double X, Double Y){
         this.text=m;
         this.x=X;
         this.y=Y;
@@ -46,11 +46,11 @@ public class Missatge implements java.io.Serializable {
         return text;
     }
     
-    public double getX() {
+    public Double getX() {
         return x;
     }
     
-    public double getY() {
+    public Double getY() {
         return y;
     }
     
