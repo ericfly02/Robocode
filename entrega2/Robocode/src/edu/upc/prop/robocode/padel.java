@@ -3,20 +3,33 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package edu.upc.prop.robocode;
-
+import java.awt.Color;
+import java.io.IOException;
+import static java.lang.Math.abs;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import robocode.*;
+import static robocode.util.Utils.normalRelativeAngleDegrees;
+import static robocode.Rules. *;
 /**
  *
  * @author speed
  */
-public class padel {
+public class padel extends TeamRobot {
 
     // Creem les variables privades que necessitem
-    private double xi;               // Coordenada inicial x del robot
-    private double yi;               // Coordenada inicial y del robot
+    private Double xi;               // Coordenada inicial x del robot
+    private Double yi;               // Coordenada inicial y del robot
     private String nomLider = null;
     private Boolean lider = false;
-    private Map<double, Posicio> posicions = null;
+    private Map<Double, Posicio> posicions;
     private Integer posicionsRebudes = 0;
+    private Boolean esperaCompanys = true;
+
+    public padel() {
+        this.posicions = null;
+    }
 
 
     public void run(){
@@ -31,71 +44,111 @@ public class padel {
 
         if(lider){
 
-            // Esperem a que tots els robots enviin les seves posicions
-            rebrePosicions();
+            try {
+                // Esperem a que tots els robots enviin les seves posicions
+                rebrePosicions();
+            } catch (IOException ex) {
+                Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             try {
                 // Enviem les posicions a tots els robots
                 enviaPosicions();
             } catch (IOException ex) {
-                Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
             }
             //que vagi al lloc que li toca, inicial
             goTo(posicions.get(xi).getX(),posicions.get(xi).getY());
+            // Ens assegurem de que tots els membres de l'equip agin contestat
+            preVoltes();
         }
         
         else{
             
+            preparaPosicions();
+
             try {
                 // Enviar posicio inicial al lider, i esperar posició a la que s'ha d'anar, i anar-hi
                 goToPosition();
             } catch (IOException ex) {
-                Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
             }
+            esperaCompanys();
 
         }
-
+        
         while(true){
             // Els robots es mous en voltant del taulell en sentit horari
             voltes_al_taulell();
         }
     }
 
-    public void rebrePosicions(){
-        posicions = new TreeMap<double,Posicio>;
-        double xi = getX(), yi = getY();
-        posicions.put(xi,new Posicio(nomLider, xi, yi));
+    public void preVoltes(){
+        Boolean esperar = true;
+        while(esperar){
+            esperar = true;
+            for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
+                    esperar=esperar && entry.getValue().isReady();
+            }
+            esperar = !esperar
+    }
+
+    public void esperaCompanys(){
+        while(esperaCompanys){
+                turnRadar(36000);//funcion que el radar da vueltas para disparar robots mientras los compañeros llegan a su posi de inicio
+                execute();
+                sendMessage(nomLider,new Missatge("Ja estic a la meva posi"));
+                doNothing();
+        }
+    }
+
+    public void preparaPosicions(){
+        xi=getX();
+        yi=getY();
+        posicions =  new TreeMap<Double,Posicio>();
+        posicions.put(xi, new Posicio(getName(),xi,yi));
+        ++posicionsRebudes;
+    }
+
+    public void rebrePosicions() throws IOException{
+        posicions = new TreeMap<Double,Posicio>();
+        xi = getX();
+        yi = getY();
+        posicions.put(xi,new Posicio(getName(), xi, yi));
+        ++posicionsRebudes;
         while(posicionsRebudes<5){
             broadcastMessage(new Missatge("Necessito dades"));
+            System.out.println("Necessito dades, posicionsrebudes = "+posicionsRebudes);
             doNothing();
         }
     }
 
-    public void enviaPosicions(){
-        double y_mitja;
-        for(Map.Entry<String,Integer> entry : treeMap.entrySet()) {
-            y_miyja+=entry.getKey();
+    public void enviaPosicions() throws IOException{
+        Double y_mitja=0.0;
+        for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
+            y_mitja+=entry.getKey();
         }
-        y_miyja/=5;
+        y_mitja/=5;
         if(y_mitja > (getBattleFieldHeight()/2)){
             y_mitja = getBattleFieldHeight()-20;
         }else{
-            y_mitja = 20;
+            y_mitja = 20.0;
         }
-        double send_x = 20;
-        for(Map.Entry<String,Integer> entry : treeMap.entrySet()) {
+        Double send_x = 20.0;
+        for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
             if(entry.getValue().getName() != getName())
                 sendMessage(entry.getValue().getName(),new Missatge("Ves a",send_x,y_mitja));
+             System.out.println("Ves a "+send_x+"  "+y_mitja);
             entry.getValue().setX(send_x);
             entry.getValue().setY(y_mitja);
             send_x+=(getBattleFieldWidth()-40)/4;
         }
     }
 
-    public void goTo(double X, double Y,Boolean abaix){
-        double mvx=X-getX(),mvy=Y-getY();
-        double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
-        double headingg = Math.toDegrees(Math.atan(mvx/mvy));
+    public void goTo(Double X, Double Y,Boolean abaix){
+        Double mvx=X-getX(),mvy=Y-getY();
+        Double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
+        Double headingg = Math.toDegrees(Math.atan(mvx/mvy));
         if (abaix){
             headingg+=180;
         }
@@ -110,28 +163,26 @@ public class padel {
             String m=M.getText();
             switch(m){
                 case "Ves a":
-                    if(posicions != null)
+                    if(posicions == null)
                         break;
-                    posicions = new TreeMap<double,Posicio>;
-                    posicions.put(xi,new Posicio(getName(),xi,yi,M.getX(),M.getY());
+                    posicions.get(xi).setX(M.getX());
+                    posicions.get(xi).setY(M.getY());
                     System.out.println("M'han comunicat que vagi al punt ("+M.getX()+" , "+M.getY()+")");
                     break;
                 case "Necessito dades":
+                                System.out.println("Toma dades, posicionsRebudes  = "+posicionsRebudes);
+                    nomLider = e.getSender();
+                    if (posicionsRebudes==0)break;
                     sendMessage(e.getSender(),new Missatge("Toma dades",xi,yi));
                     doNothing();
                     break;
                 case "Toma dades":
+                     System.out.println("Gracies per les dades, "+e.getSender());
                     nouMembre(e.getSender(),M.getX(),M.getY());
                     doNothing();
                     break;
-                case "On vaig capità?":
-                    if(posicionsRebudes<5) 
-                        nouMembre(e.getSender(),M.getX(),M.getY());  // Incrementar posicionsRebudes
-                    else{
-                        sendMessage(e.getSender(),new Missatge("Ves a",posicio(e.getSender()),(double)0));
-                    }
-                    break;
-
+                case "Ja estic a la meva posi":
+                    estaAlaPosi(e.getSender());
                 case "Stop":
                     stop();
                     break;               
@@ -139,11 +190,20 @@ public class padel {
                     break;
             }
         } catch (IOException ex) {
-            Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
 
-    public void nouMembre(String name,double xx,double yy){
+    public void estaAlaPosi(String name){
+        for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
+            if(entry.getValue().getName() == name){
+                entry.getValue().jaEstaPreparat();
+                break;
+            }
+        }
+    }
+
+     public void nouMembre(String name,Double xx,Double yy){
         if(posicions.containsKey(xx)){
             Boolean trobat=false;
             for(int i = 0;i<5 && !trobat;++i){
@@ -153,61 +213,52 @@ public class padel {
             if (!trobat){
                 for(int i = 0;i<5;++i){
                    if(posicions.get(xx+i*0.000001) == null){}
-                        posicions.put(xx+i*0.000001, new Posicio(name, xx, yy);)
+                        posicions.put(xx+i*0.000001, new Posicio(name, xx, yy));
+                        ++posicionsRebudes;
                         break;
                 }
             }
         }else{
-          posicions.put(xx, new Posicio(name, xx, yy);)
-
+          posicions.put(xx, new Posicio(name, xx, yy));
+          ++posicionsRebudes;
         }
     }
     
     public void voltes_al_taulell(){
         // Els robots es mous en voltant del taulell en sentit horari
-        Integer maxHeight = getBattleFieldHeight() - 20;
-        Integer maxWidth = getBattleFieldWidth() - 20;
+        // El -23 serveix per a que el robot intenti no xocar amb la paret
+        Double maxHeight = getBattleFieldHeight() - 23;
+        Double maxWidth = getBattleFieldWidth() - 23;
 
-        if((getX() == 20 && getY() == 20)){
+        // Si ens trobem a alguna cantonada, realitzem un gir de 90º
+        if((getX() <= 21 && getY() <= 21 ) || (getX() <= 21 && getY() >= maxHeight) || (getX() >= maxWidth && getY() <= 21) || (getX() >= maxWidth && getY() >= maxHeight)){
             turnRight(90);
-            setAhead(maxHeight - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == 20 && getY() == maxHeight)){
-            turnRight(90);
-            setAhead(maxWidth - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == maxWidth && getY() == maxHeight)){
-            turnRight(90);
-            setAhead(maxHeight - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == maxWidth && getY() == 20)){
-            turnRight(90);
-            setAhead(maxWidth - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
+            // Fem un ahead, ja que di no el robot es quedaria en bucle infinit donant voltes ja que detectaria que esta sempre a una cantonada
+            ahead(10);
         }
         else{
-            // Si no es cap dels casos anteriors, vol dir que el robot no h començat a moure's
-            Integer distancia = (int) (maxWidth - getX());
-            setAhead(distancia);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        
+            // Mirem si ens trobem a la cantonada inferior esquerra o superior dreta, per aixi realitzar un moviment amb distancia igual a l'alçada del taulell
+            if(getX() <= 21 || getX() >= maxWidth){
+                Integer distancia = (int) ((getBattleFieldHeight() - 20) - getY());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);  
+            }
+
+            // Mirem si ens trobem a la cantonada superior esquerra o inferior dreta, per aixi realitzar un moviment amb distancia igual a l'amplada del taulell
+            else{
+                Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+            }         
+            
+        } 
     }
     
-    // Si el robot es xoca contra algun enemic, tots els altres es paren i ataquen
+    // Si el robot es xoca contra algun enemic, tots els robots es converteixen en kamikaze
     public void onHitRobot(HitRobotEvent e){
         // es comunica als altres robot que tambe han de parar
         broadcastMessage(new Missatge("Stop"));
@@ -230,21 +281,16 @@ public class padel {
                 fire(1);
             }
         }
-        
-
-
     }
     
-}
-
-
-public void onScannedRobot(ScannedRobotEvent e){
-        x = getX();
-        y = getY();
+    public void onScannedRobot(ScannedRobotEvent e){
+        Double x = getX();
+        Double y = getY();
+        // Si encara no ha comnçat el procés , i el robot escaneja a un del seu euqip
         if (isTeammate(e.getName())){
             // Obtenim posició del robot aliat
-           double posicio_x = x + e.getDistance() * Math.sin(Math.toRadians(getHeading() + e.getBearing()));
-           double posicio_y = y + e.getDistance() * Math.cos(Math.toRadians(getHeading() + e.getBearing()));
+           Double posicio_x = x + e.getDistance() * Math.sin(Math.toRadians(getHeading() + e.getBearing()));
+           Double posicio_y = y + e.getDistance() * Math.cos(Math.toRadians(getHeading() + e.getBearing()));
            if(posicio_x-x <= 40 && posicio_x-x >= -40 && posicio_y-y <= 40 && posicio_y-y >= -40){
                 // Si es troba aprop del corner 2
                 if(width-x >= width-80 || height-y >= height-80){
@@ -269,47 +315,15 @@ public void onScannedRobot(ScannedRobotEvent e){
            }
            return;
  
-        }else{
-            if(lider && millora2){
-                    double enemyBearing = getHeading() + e.getBearing();
-                    double dx = getX() + e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
-                    double dy = getY() + e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
-                    try {
-                        broadcastMessage(new Missatge("Ataca",dx,dy,e.getHeading(),e.getVelocity()));
-                    } catch (IOException ex) {
-                        Logger.getLogger(RoboCorner.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            if(kamikaze){
-                    // Si el robot escanejat és un enemic, el seguim
-                    if (e.getDistance() < 0){
-                        // Si l'enemic està a una distància inferior a 100, el seguim
-                        // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
-                        setTurnRight(e.getBearing());
-                        setAhead(e.getDistance());
-                        fire(3);
-                    }
-                    else{
-                        // Si l'enemic està a una distància superior a 100, el seguim
-                        setTurnRight(e.getBearing());
-                        setAhead(e.getDistance());
-                        fire(3);
-                    }
-                
-            }
-            else{
-                    /*double enemyBearing = getHeading() + e.getBearing();
-                    double dx = e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
-                    double dy = e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
-                    double theta = Math.toDegrees(Math.atan2(dx, dy));
-                    turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
-                    fire(3);*/
-                    System.out.println("Vull disparar a "+e.getName());
-                    double enemyBearing = getHeading() + e.getBearing();
-                    double px = getX() + e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
-                    double py = getY() + e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
-                    fireMovingTarget(px, py, e.getHeading(), e.getVelocity());
-            }
+        }
+        else{
+
+            Double enemyBearing = getHeading() + e.getBearing();
+            Double dx = e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
+            Double dy = e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
+            Double theta = Math.toDegrees(Math.atan2(dx, dy));
+            turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
+            fire(3);          
         }
     }
 

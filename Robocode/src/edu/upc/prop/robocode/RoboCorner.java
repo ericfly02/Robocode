@@ -27,7 +27,7 @@ public class RoboCorner extends AdvancedRobot{
         setScanColor(Color.black);
 
         // Enviar posicio inicial al lider, i esperar posició a la que s'ha d'anar, i anar-hi
-        goTo(0, 0, true);
+        goTo(20, 20);
 
         while(true){
             // Els robots es mous en voltant del taulell en sentit horari
@@ -35,58 +35,55 @@ public class RoboCorner extends AdvancedRobot{
         }
     }
 
-    public void goTo(double X, double Y,Boolean abaix){
+    public void goTo(double X, double Y){
         double mvx=X-getX(),mvy=Y-getY();
         double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
         double headingg = Math.toDegrees(Math.atan(mvx/mvy));
-        if (abaix){
+        if (Y <= getBattleFieldHeight()){
             headingg+=180;
         }
         turnRight(headingg-getHeading());
         ahead(distance);
+        //Movem el robot perque estigui en paral·lel amb el taulell
+        if(Y <= getBattleFieldHeight())turnLeft(getHeading()-270);
+        else turnRight(180-getHeading());
+        turnGunRight(45);
     }
 
     public void voltes_al_taulell(){
         // Els robots es mous en voltant del taulell en sentit horari
-        Double maxHeight = getBattleFieldHeight() - 20;
-        Double maxWidth = getBattleFieldWidth() - 20;
+        // El -23 serveix per a que el robot intenti no xocar amb la paret
+        Double maxHeight = getBattleFieldHeight() - 23;
+        Double maxWidth = getBattleFieldWidth() - 23;
 
-        if((getX() == 20 && getY() == 20)){
+        // Si ens trobem a alguna cantonada, realitzem un gir de 90º
+        if((getX() <= 21 && getY() <= 21 ) || (getX() <= 21 && getY() >= maxHeight) || (getX() >= maxWidth && getY() <= 21) || (getX() >= maxWidth && getY() >= maxHeight)){
             turnRight(90);
-            setAhead(maxHeight - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == 20 && getY() == maxHeight)){
-            turnRight(90);
-            setAhead(maxWidth - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == maxWidth && getY() == maxHeight)){
-            turnRight(90);
-            setAhead(maxHeight - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
-        }
-        else if((getX() == maxWidth && getY() == 20)){
-            turnRight(90);
-            setAhead(maxWidth - 20);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
+            // Fem un ahead, ja que di no el robot es quedaria en bucle infinit donant voltes ja que detectaria que esta sempre a una cantonada
+            ahead(10);
         }
         else{
-            // Si no es cap dels casos anteriors, vol dir que el robot no h començat a moure's
-            Integer distancia = (int) (maxWidth - getX());
-            setAhead(distancia);
-            execute();
-            turnGunLeft(45);
-            turnGunRight(45);
+            // Mirem si ens trobem a la cantonada inferior esquerra o superior dreta, per aixi realitzar un moviment amb distancia igual a l'alçada del taulell
+            if(getX() <= 21 || getX() >= maxWidth){
+                Integer distancia = (int) ((getBattleFieldHeight() - 20) - getY());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+                
+            }
+
+            // Mirem si ens trobem a la cantonada superior esquerra o inferior dreta, per aixi realitzar un moviment amb distancia igual a l'amplada del taulell
+            else{
+                Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+            }         
+            
         }
+
         
     }
 }
