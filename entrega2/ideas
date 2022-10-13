@@ -26,3 +26,12 @@
 		
 1. que en corner ataque bien el cañon
 2. apuntar antes de disparar
+
+1. establecer que uno sea el lider
+2. El lider le dirà a cada robot donde tiene k ir  (coordenada x y) funcion goTo(x,y)
+3. Si robot se choca, se lo comunica a los demas y se paran 5 segundos
+4. hacer q el robot no se choque con la pared
+5. que el radar y pistola se mueva diferente en cada robot:
+	- Robot primero: 180º izquierda, 140º derecha
+	- Robot middle: 140º izquierda, 140º derecha
+	- Robot final: 140º izquierda, 180º derecha
