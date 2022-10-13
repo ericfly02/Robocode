@@ -26,6 +26,7 @@ public class padel extends TeamRobot {
     private Map<Double, Posicio> posicions;
     private Integer posicionsRebudes = 0;
     private Boolean esperaCompanys = true;
+    private String status; //pot ser kamikaze(el robot s'ha xocat amb un enemic i es transforma en kamikaze fins que el mati o es mori), esperant(espera a rebre a quina posicio ha de començar), arribant(esperant)
 
     public padel() {
         this.posicions = null;
@@ -91,6 +92,10 @@ public class padel extends TeamRobot {
                     esperar=esperar && entry.getValue().isReady();
             }
             esperar = !esperar
+            if(esperar == true){
+                broadcastMessage(new Missatge("Has arribat?"));
+                doNothing();
+            }
     }
 
     public void esperaCompanys(){
@@ -185,7 +190,8 @@ public class padel extends TeamRobot {
                     estaAlaPosi(e.getSender());
                 case "Stop":
                     stop();
-                    break;               
+                    break; 
+                case "Has arribat?":              
                 default:
                     break;
             }
@@ -260,7 +266,6 @@ public class padel extends TeamRobot {
     
     // Si el robot es xoca contra algun enemic, tots els robots es converteixen en kamikaze
     public void onHitRobot(HitRobotEvent e){
-        // es comunica als altres robot que tambe han de parar
         broadcastMessage(new Missatge("Stop"));
         
         if(e.isMyFault()){
