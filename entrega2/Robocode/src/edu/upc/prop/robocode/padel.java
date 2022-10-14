@@ -64,7 +64,7 @@ public class padel extends TeamRobot {
                 Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
             }
             //que vagi al lloc que li toca, inicial
-            goTo(posicions.get(xi).getX(),posicions.get(xi).getY());
+            goAndTurn(posicions.get(xi).getX(),posicions.get(xi).getY());
             estaAlaPosi(getName());
             try {
                 // Ens assegurem de que tots els membres de l'equip agin contestat
@@ -185,8 +185,22 @@ public class padel extends TeamRobot {
         }
         turnRight(headingg-getHeading());
         ahead(distance);
+        //Movem el robot perque estigui en paral·lel amb el taulell
     }
-
+    
+    public void goAndTurn(Double X, Double Y){
+        goTo(X, Y);
+        System.out.println("Antes del while");
+        while(Math.abs(getX()-X) > 1 || Math.abs(getY()-Y) > 1){
+            goTo(X, Y);
+            System.out.println("Despues del while, x = "+X+" Y = "+Y+" getX = "+getX()+" getY = "+getY());
+        }
+        doNothing();
+        System.out.println("Fuera del while");
+        if(Y <= getBattleFieldHeight())turnLeft(getHeading()-270);
+        else turnRight(180-getHeading());
+        turnGunRight(45);
+    }
     public void onMessageReceived(MessageEvent e){
         
         try {
@@ -277,6 +291,8 @@ public class padel extends TeamRobot {
     }
     
     public void voltes_al_taulell(){
+        System.out.println("Estamos en el LOOOOOOOOP");
+        setAdjustRadarForGunTurn(false);
         // Els robots es mous en voltant del taulell en sentit horari
         // El -23 serveix per a que el robot intenti no xocar amb la paret
         Double maxHeight = getBattleFieldHeight() - 23;
@@ -287,31 +303,39 @@ public class padel extends TeamRobot {
             turnRight(90);
             // Fem un ahead, ja que di no el robot es quedaria en bucle infinit donant voltes ja que detectaria que esta sempre a una cantonada
             ahead(10);
+            doNothing();
+            System.out.println("Estamos en IF 1");
         }
         else{
+            System.out.println("Estamos en ELSE 1");
             // Mirem si ens trobem a la cantonada inferior esquerra o superior dreta, per aixi realitzar un moviment amb distancia igual a l'alçada del taulell
             if(getX() <= 21 || getX() >= maxWidth){
+                System.out.println("Estamos en IF 2");
                 Integer distancia = (int) ((getBattleFieldHeight() - 20) - getY());  
                 setAhead(distancia);
                 execute();
                 turnGunRight(90);
-                turnGunLeft(90);  
+                turnGunLeft(90); 
+                doNothing();
             }
 
             // Mirem si ens trobem a la cantonada superior esquerra o inferior dreta, per aixi realitzar un moviment amb distancia igual a l'amplada del taulell
             else{
-                Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
-                setAhead(distancia);
+                System.out.println("Estamos en ELSE 2");
+                //Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
+                //setAhead(distancia);
+                setAhead(100);
                 execute();
                 turnGunRight(90);
                 turnGunLeft(90);
+                doNothing();
             }         
             
         } 
     }
     
     // Si el robot es xoca contra algun enemic, tots els robots es converteixen en kamikaze
-    public void onHitRobot(HitRobotEvent e){
+    /*public void onHitRobot(HitRobotEvent e){
         try {
             broadcastMessage(new Missatge("Stop"));
         } catch (IOException ex) {
@@ -336,6 +360,14 @@ public class padel extends TeamRobot {
                 fire(1);
             }
         }
+    }*/
+    
+    public void onHitRobot(HitRobotEvent e){
+        setTurnRight(90);
+        setAhead(100);
+        setTurnRadarRight(3600);
+        execute();
+        
     }
     
     public void onScannedRobot(ScannedRobotEvent e){
@@ -388,7 +420,7 @@ public class padel extends TeamRobot {
             sendMessage(nomLider,new Missatge("On vaig?"));
             doNothing();
         }
-        goTo(posicions.get(xi).getX(),posicions.get(xi).getY());
+        goAndTurn(posicions.get(xi).getX(),posicions.get(xi).getY());
     }
 
 }
