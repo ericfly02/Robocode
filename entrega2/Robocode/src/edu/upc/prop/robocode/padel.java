@@ -26,7 +26,12 @@ public class padel extends TeamRobot {
     private Map<Double, Posicio> posicions;
     private Integer posicionsRebudes = 0;
     private Boolean esperaCompanys = true;
-    private String status; //pot ser kamikaze(el robot s'ha xocat amb un enemic i es transforma en kamikaze fins que el mati o es mori), esperant(espera a rebre a quina posicio ha de començar), arribant(esperant)
+    private String status; //pot ser: IMPORTANT: cal seguir el codi i tocar l'estatus que toca a cada lloc 
+                                        //kamikaze(el robot s'ha xocat amb un enemic i es transforma en kamikaze fins que el mati o es mori)
+                                        //noPosi(espera a rebre a quina posicio ha de començar)
+                                        //arribant(en procés d'arribar al punt d'inici)
+                                        //esperant(havent arribat espera el start)
+                                        //atacant
 
     public padel() {
         this.posicions = null;
@@ -60,8 +65,13 @@ public class padel extends TeamRobot {
             }
             //que vagi al lloc que li toca, inicial
             goTo(posicions.get(xi).getX(),posicions.get(xi).getY());
-            // Ens assegurem de que tots els membres de l'equip agin contestat
-            preVoltes();
+            estaAlaPosi(getName());
+            try {
+                // Ens assegurem de que tots els membres de l'equip agin contestat
+                preVoltes();
+            } catch (IOException ex) {
+                Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         else{
@@ -74,7 +84,13 @@ public class padel extends TeamRobot {
             } catch (IOException ex) {
                 Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
             }
-            esperaCompanys();
+            System.out.println("Esperant companys");
+            status="esperant";
+            try {
+                esperaCompanys();
+            } catch (IOException ex) {
+                Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
         }
         
@@ -84,27 +100,37 @@ public class padel extends TeamRobot {
         }
     }
 
-    public void preVoltes(){
+    public void preVoltes() throws IOException{
         Boolean esperar = true;
         while(esperar){
             esperar = true;
             for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
                     esperar=esperar && entry.getValue().isReady();
             }
-            esperar = !esperar
+            esperar = !esperar;
             if(esperar == true){
                 broadcastMessage(new Missatge("Has arribat?"));
                 doNothing();
             }
+        }
+        broadcastMessage(new Missatge("Start"));
+        System.out.println("Start");
+        status="atacant";
+        doNothing();
     }
 
-    public void esperaCompanys(){
-        while(esperaCompanys){
-                turnRadar(36000);//funcion que el radar da vueltas para disparar robots mientras los compañeros llegan a su posi de inicio
+    public void esperaCompanys() throws IOException{
+        System.out.println("Esperant companys fins de la funció");
+        while(status.equals("esperant")){//aquí hay que poner que status==esperant pero primero hay que revisar todo y poner los status donde toque
+                turnRadarRight(36000);//funcion que el radar da vueltas para disparar robots mientras los compañeros llegan a su posi de inicio
                 execute();
                 sendMessage(nomLider,new Missatge("Ja estic a la meva posi"));
+                System.out.println("Ja estic a la meva posi");
+                turnRight(1);
                 doNothing();
         }
+        System.out.println("Ja estic en marxa");
+        doNothing();
     }
 
     public void preparaPosicions(){
@@ -150,11 +176,11 @@ public class padel extends TeamRobot {
         }
     }
 
-    public void goTo(Double X, Double Y,Boolean abaix){
+    public void goTo(Double X, Double Y){
         Double mvx=X-getX(),mvy=Y-getY();
         Double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
         Double headingg = Math.toDegrees(Math.atan(mvx/mvy));
-        if (abaix){
+        if (Y==20){
             headingg+=180;
         }
         turnRight(headingg-getHeading());
@@ -187,11 +213,30 @@ public class padel extends TeamRobot {
                     doNothing();
                     break;
                 case "Ja estic a la meva posi":
+                    if(status == "atacant"){
+                        sendMessage(e.getSender(),new Missatge("Start"));
+                        doNothing();
+                    }
                     estaAlaPosi(e.getSender());
                 case "Stop":
                     stop();
                     break; 
-                case "Has arribat?":              
+                case "Has arribat?":
+                    if(status == "esperant")
+                        sendMessage(nomLider,new Missatge("Ja estic a la meva posi"));
+                case "On vaig?":
+                    if(status == "esperant"){
+                        for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
+                            if(entry.getValue().getName() == e.getSender()){
+                                sendMessage(e.getSender(),new Missatge("Ves a",entry.getValue().getX(),entry.getValue().getY()));
+                                break;
+                            }
+                        }
+                    }
+                break;
+                case "Start":
+                    status="atacant";
+                    System.out.println("He rebut el start");
                 default:
                     break;
             }
@@ -199,6 +244,7 @@ public class padel extends TeamRobot {
             Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
+    
 
     public void estaAlaPosi(String name){
         for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
@@ -235,7 +281,7 @@ public class padel extends TeamRobot {
         // El -23 serveix per a que el robot intenti no xocar amb la paret
         Double maxHeight = getBattleFieldHeight() - 23;
         Double maxWidth = getBattleFieldWidth() - 23;
-
+        doNothing();
         // Si ens trobem a alguna cantonada, realitzem un gir de 90º
         if((getX() <= 21 && getY() <= 21 ) || (getX() <= 21 && getY() >= maxHeight) || (getX() >= maxWidth && getY() <= 21) || (getX() >= maxWidth && getY() >= maxHeight)){
             turnRight(90);
@@ -266,7 +312,11 @@ public class padel extends TeamRobot {
     
     // Si el robot es xoca contra algun enemic, tots els robots es converteixen en kamikaze
     public void onHitRobot(HitRobotEvent e){
-        broadcastMessage(new Missatge("Stop"));
+        try {
+            broadcastMessage(new Missatge("Stop"));
+        } catch (IOException ex) {
+            Logger.getLogger(padel.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         if(e.isMyFault()){
 
@@ -293,6 +343,7 @@ public class padel extends TeamRobot {
         Double y = getY();
         // Si encara no ha comnçat el procés , i el robot escaneja a un del seu euqip
         if (isTeammate(e.getName())){
+            Double width = getBattleFieldWidth(), height = getBattleFieldHeight();
             // Obtenim posició del robot aliat
            Double posicio_x = x + e.getDistance() * Math.sin(Math.toRadians(getHeading() + e.getBearing()));
            Double posicio_y = y + e.getDistance() * Math.cos(Math.toRadians(getHeading() + e.getBearing()));
@@ -330,6 +381,14 @@ public class padel extends TeamRobot {
             turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
             fire(3);          
         }
+    }
+
+    public void goToPosition() throws IOException {
+        while(posicions.get(xi).getX() == 0.0){
+            sendMessage(nomLider,new Missatge("On vaig?"));
+            doNothing();
+        }
+        goTo(posicions.get(xi).getX(),posicions.get(xi).getY());
     }
 
 }
