@@ -199,11 +199,15 @@ public class padel extends TeamRobot {
         Double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
         Double headingg = Math.toDegrees(Math.atan(mvx/mvy));
         if (Y<getY()){
-            headingg-=180;
+            headingg-=180.0;
         }
         headingg-=getHeading();
-        if(headingg<0.0)headingg+=360;
-        turnRight(headingg);
+        while(headingg<0.0)headingg+=360.0;
+        while(headingg>360.0)headingg-=360.0;
+        if(headingg<180.0)
+            turnRight(headingg);
+        else
+            turnLeft(360-headingg);
         ahead(distance);
         //Movem el robot perque estigui en paral·lel amb el taulell
     }
@@ -514,13 +518,13 @@ public class padel extends TeamRobot {
             //si esta delante mio, etsa mas cerca de 50 y es teammate stop
             // Si encara no ha comnçat el procés , i el robot escaneja a un del seu equip
             if (isTeammate(e.getName())){
-                
-                if((e.getDistance() <= 100) && ((e.getBearing() >= -25) || (e.getBearing() <= 25))){
+                System.out.println("Bearing = "+status);
+                if((e.getDistance() <= 150.0) && ((e.getBearing() >= -5.0) && (e.getBearing() <= 5.0))){
                     stop();
                     setTurnRadarRight(36000);
                     execute();
                     doNothing();
-                    resume();
+                    //resume();
                 }
             return;
             }
