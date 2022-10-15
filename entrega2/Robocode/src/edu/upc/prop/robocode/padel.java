@@ -41,6 +41,7 @@ public class padel extends TeamRobot {
 
     public void run(){
         status="noPosi";
+        System.out.println("Status = "+status);
         // Modifiquem el color del robot
         setBodyColor(Color.black);
         setGunColor(Color.black);
@@ -67,7 +68,9 @@ public class padel extends TeamRobot {
             }
             //que vagi al lloc que li toca, inicial
             goForReal(posicions.get(xi).getX(),posicions.get(xi).getY());
+            setTurnRadarRight(36000);
             status="esperant";
+        System.out.println("Status = "+status);
             if(getY()>getBattleFieldHeight()/2)
                 nextCorner=2;
             else 
@@ -93,6 +96,7 @@ public class padel extends TeamRobot {
             }
             System.out.println("Esperant companys");
             status="esperant";
+        System.out.println("Status = "+status);
             try {
                 esperaCompanys();
             } catch (IOException ex) {
@@ -126,6 +130,7 @@ public class padel extends TeamRobot {
         broadcastMessage(new Missatge("Start"));
         System.out.println("Start");
         status="atacant";
+        System.out.println("Status = "+status);
         doNothing();
     }
 
@@ -184,16 +189,21 @@ public class padel extends TeamRobot {
             send_x+=(getBattleFieldWidth()-40)/4;
         }
         status="arribant";
+        System.out.println("Status = "+status);
     }
 
     public void goTo(Double X, Double Y){
+        setTurnRadarRight(3600);
+        execute();
         Double mvx=X-getX(),mvy=Y-getY();
         Double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
         Double headingg = Math.toDegrees(Math.atan(mvx/mvy));
-        if (Y==20){
-            headingg+=180;
+        if (Y<getY()){
+            headingg-=180;
         }
-        turnRight(headingg-getHeading());
+        headingg-=getHeading();
+        if(headingg<0.0)headingg+=360;
+        turnRight(headingg);
         ahead(distance);
         //Movem el robot perque estigui en paral·lel amb el taulell
     }
@@ -201,10 +211,14 @@ public class padel extends TeamRobot {
     public void goForReal(Double X, Double Y){
         goTo(X, Y);
         System.out.println("Antes del while");
-        while(Math.abs(getX()-X) > 5 || Math.abs(getY()-Y) > 5){
+        while(Math.abs(getX()-X) > 20 || Math.abs(getY()-Y) > 20){
             goTo(X, Y);
             System.out.println("Despues del while, x = "+X+" Y = "+Y+" getX = "+getX()+" getY = "+getY());
         }
+        //Movem el robot perque estigui en paral·lel amb el taulell
+        /*if(Y <= getBattleFieldHeight())turnLeft(getHeading()-270);
+        else turnRight(180-getHeading());*/
+        //turnGunRight(45);
     }
     public void onMessageReceived(MessageEvent e){
         
@@ -219,6 +233,7 @@ public class padel extends TeamRobot {
                     posicions.get(xi).setY(M.getY());
                     System.out.println("M'han comunicat que vagi al punt ("+M.getX()+" , "+M.getY()+")");
                     status="arribant";
+        System.out.println("Status = "+status);
                     break;
                 case "Necessito dades":
                                 System.out.println("Toma dades, posicionsRebudes  = "+posicionsRebudes);
@@ -255,6 +270,7 @@ public class padel extends TeamRobot {
                 break;
                 case "Start":
                     status="atacant";
+        System.out.println("Status = "+status);
                     System.out.println("He rebut el start");
                 default:
                     break;
@@ -295,10 +311,13 @@ public class padel extends TeamRobot {
         }
     }
     
+    
     public void voltes_al_taulell(){
         // Els robots es mous en voltant del taulell en sentit horari
         // El -23 serveix per a que el robot intenti no xocar amb la paret
-        doNothing();
+        setTurnRadarRight(36000);
+        execute();
+        
         Double cx = 20.0, cy = 20.0;
         if(nextCorner == 1){
             cy = getBattleFieldHeight()-20.0;
@@ -307,11 +326,48 @@ public class padel extends TeamRobot {
             cy = getBattleFieldHeight()-20.0;
         }else if (nextCorner == 3)
             cx = getBattleFieldWidth()-20.0;
+            System.out.println("Entro a donar  voltes "+cx+"  "+cy);
+        turnRight(2);
         goForReal(cx,cy);
-        nextCorner = (nextCorner+1)%4;
-            
+        nextCorner = (nextCorner+1)%4;  
     }
-    
+
+/* 
+    public void voltes_al_taulell(){
+        // Els robots es mous en voltant del taulell en sentit horari
+        // El -23 serveix per a que el robot intenti no xocar amb la paret
+        Double maxHeight = getBattleFieldHeight() - 23;
+        Double maxWidth = getBattleFieldWidth() - 23;
+
+        // Si ens trobem a alguna cantonada, realitzem un gir de 90º
+        if((getX() <= 21 && getY() <= 21 ) || (getX() <= 21 && getY() >= maxHeight) || (getX() >= maxWidth && getY() <= 21) || (getX() >= maxWidth && getY() >= maxHeight)){
+            turnRight(90);
+            // Fem un ahead, ja que di no el robot es quedaria en bucle infinit donant voltes ja que detectaria que esta sempre a una cantonada
+            ahead(10);
+        }
+        else{
+            // Mirem si ens trobem a la cantonada inferior esquerra o superior dreta, per aixi realitzar un moviment amb distancia igual a l'alçada del taulell
+            if(getX() <= 21 || getX() >= maxWidth){
+                Integer distancia = (int) ((getBattleFieldHeight() - 20) - getY());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+                
+            }
+
+            // Mirem si ens trobem a la cantonada superior esquerra o inferior dreta, per aixi realitzar un moviment amb distancia igual a l'amplada del taulell
+            else{
+                Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+            }         
+            
+        } 
+    }
+   */ 
     // Si el robot es xoca contra algun enemic, tots els robots es converteixen en kamikaze
     /*public void onHitRobot(HitRobotEvent e){
         try {
@@ -343,107 +399,148 @@ public class padel extends TeamRobot {
     public void onHitRobot(HitRobotEvent e){
         Double x = getX();
         Double y = getY();
-
-        //si es teammate back de 20
-        if(e.isMyFault() && isTeammate(e.getName())){
-            back(75);
+        if(isTeammate(e.getName())){
+            if(e.getBearing()<90 && e.getBearing()>-90){
+                back(40);
+                doNothing();
+            }
+            return;
         }
+        if(status=="arribant" && e.getBearing()<75 && e.getBearing()>-75){
+            back(20);
+            Double rotacio=0.0;
+            if(getX()>getBattleFieldWidth() && (getHeading()>270) || (getHeading()<90)){
+                rotacio = -1.0;
+            }
+            if(getX()>getBattleFieldWidth() && !(getHeading()>270) || (getHeading()<90)){
+                rotacio = 1.0;
+            }
+            if(getX()<=getBattleFieldWidth() && (getHeading()>270) || (getHeading()<90)){
+                rotacio = 1.0;
+            }
+            if(getX()<=getBattleFieldWidth() && !(getHeading()>270) || (getHeading()<90)){
+                rotacio = -1.0;
+            }
+            turnRight(90*rotacio);
+            setTurnLeft(rotacio*90);
+            setAhead(100);
+            return;
+        }
+        //si es teammate back de 20
+        }/*
 
         ///si es enemigo le hace un kamikaze
         else{
-            status = "kamikaze";
-            Double rotacio;
-            if (e.getBearing() >= 0) {
-			rotacio = 1.0;
-		} else {
-			rotacio = -1.0;
-		}
-		turnRight(e.getBearing());
+            if(status != "kamikaze"){
+                status = "kamikaze";
+            System.out.println("Status = "+status);
+                enemyName = e.getName();
+            }
+                
+                Double rotacio;
+                if (e.getBearing() >= 0) {
+                rotacio = 1.0;
+            } else {
+                rotacio = -1.0;
+            }
+            turnRight(e.getBearing());
 
-		// Determine a shot that won't kill the robot...
-		// We want to ram him instead for bonus points
-		if (e.getEnergy() > 16) {
-			fire(3);
-		} else if (e.getEnergy() > 10) {
-			fire(2);
-		} else if (e.getEnergy() > 4) {
-			fire(1);
-		} else if (e.getEnergy() > 2) {
-			fire(.5);
-		} else if (e.getEnergy() > .4) {
-			fire(.1);
-		}
-		ahead(40);
-            /*Double angle = getHeading() + e.getBearing();
-            Double enemyX = x + e.getDistance() * Math.sin(Math.toRadians(angle));
-            Double enemyY = y + e.getDistance() * Math.cos(Math.toRadians(angle));
-            Double angleToEnemy = Math.toDegrees(Math.atan2(enemyX - x, enemyY - y));
-            Double radarTurn = Utils.normalRelativeAngleDegrees(angleToEnemy - getRadarHeading());
-            setTurnRadarRight(radarTurn);
-            setTurnRight(e.getBearing());
-            setAhead(e.getDistance() - 140);
-            execute();*/
+            // Determine a shot that won't kill the robot...
+            // We want to ram him instead for bonus points
+            if (e.getEnergy() > 16) {
+                fire(3);
+            } else if (e.getEnergy() > 10) {
+                fire(2);
+            } else if (e.getEnergy() > 4) {
+                fire(1);
+            } else if (e.getEnergy() > 2) {
+                fire(.5);
+            } else if (e.getEnergy() > .4) {
+                fire(.1);
+            }
+            ahead(40);
 
         }
 
-        /*
-        setTurnRight(90);
-        setAhead(100);
-        setTurnRadarRight(3600);
-        execute();
-        */
-    }
+    }*/
     
     //Si el robot ha matat al que estaba seguint, canvia el seu estat a "atacant"
     public void onRobotDeath(RobotDeathEvent e){
         if(status == "kamikaze" && e.getName() == enemyName){
             status = "atacant";
+        System.out.println("Status = "+status);
             enemyName=null;
         }
+        if (lider && isTeammate(e.getName())){
+            for(Map.Entry<Double,Posicio> entry : posicions.entrySet()) {
+                    if(entry.getValue().getName() == e.getName());
+                    posicions.remove(entry);
+            }
+        }
     }
+
     
     public void onScannedRobot(ScannedRobotEvent e){
         
         Double x = getX();
         Double y = getY();
-        
-        if(status=="kamikaze" && e.getName() == enemyName && e.getDistance()>60){
-            status="atacant";
-            enemyName=null;
+   /*     if((status != "arribant") && e.getDistance() <= 40){
+            status  = "kamikaze";
+            enemyName = e.getName();
         }
-
-        //si esta delante mio, etsa mas cerca de 50 y es teammate stop
-        // Si encara no ha comnçat el procés , i el robot escaneja a un del seu equip
-        if (isTeammate(e.getName())){
-            
-            if((e.getDistance() <= 50) && ((e.getBearing() >= -40) || (e.getBearing() <= 40))){
-                stop();
+        if(status=="kamikaze"){
+                if(e.getName() == enemyName && e.getDistance()>60){
+                status="atacant";
+                System.out.println("Status = "+status);
+                enemyName=null;
             }
-           return;
-        }
-
-        //si es enemigo y esta mas cerca de 40 se le persigue - (si status no es arribant)
-        else{
-
-            if((status != "arribant") && e.getDistance() <= 40){
-                status  = "kamikaze";
-                Double angle = getHeading() + e.getBearing();
-                Double enemyX = x + e.getDistance() * Math.sin(Math.toRadians(angle));
-                Double enemyY = y + e.getDistance() * Math.cos(Math.toRadians(angle));
-                Double angleToEnemy = Math.toDegrees(Math.atan2(enemyX - x, enemyY - y));
-                Double radarTurn = normalRelativeAngleDegrees(angleToEnemy - getRadarHeading());
-                setTurnRadarRight(radarTurn);
+            //copiar lo k hace un kamikaze
+            // Si el robot escanejat és un enemic, el seguim
+            if (e.getDistance() < 0){
+                // Si l'enemic està a una distància inferior a 100, el seguim
+                // getBearing() ens retorna la direcció del robot escanejat respecte el nostre robot (en graus)
                 setTurnRight(e.getBearing());
-                setAhead(e.getDistance() - 140);
-                execute();
+                setAhead(e.getDistance());
+                fire(3);
+            }
+            else{
+                // Si l'enemic està a una distància superior a 100, el seguim
+                setTurnRight(e.getBearing());
+                setAhead(e.getDistance());
+                fire(3);
+            }
+        }else{
+*/
+            //si esta delante mio, etsa mas cerca de 50 y es teammate stop
+            // Si encara no ha comnçat el procés , i el robot escaneja a un del seu equip
+            if (isTeammate(e.getName())){
+                
+                if((e.getDistance() <= 100) && ((e.getBearing() >= -25) || (e.getBearing() <= 25))){
+                    stop();
+                    setTurnRadarRight(36000);
+                    execute();
+                    doNothing();
+                    resume();
+                }
+            return;
             }
 
-            Double enemyBearing = getHeading() + e.getBearing();
-            Double dx = e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
-            Double dy = e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
-            Double theta = Math.toDegrees(Math.atan2(dx, dy));
-            turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
-            fire(3);          
+            //si es enemigo y esta mas cerca de 40 se le persigue - (si status no es arribant)
+            else{
+                if(status!="arribant" && e.getDistance()<(getBattleFieldWidth()/2)){
+                //if(status != "kamikaze" && status != "arribant")
+                    //stop();
+                Double enemyBearing = getHeading() + e.getBearing();
+                Double dx = e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
+                Double dy = e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
+                Double theta = Math.toDegrees(Math.atan2(dx, dy));
+                turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
+                fire(3);
+                //if(status != "kamikaze" && status != "arribant")
+                  //  resume();
+                  scan();
+        
+            }
         }
     }
 

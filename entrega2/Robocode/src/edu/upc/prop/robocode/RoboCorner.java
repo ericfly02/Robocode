@@ -11,92 +11,80 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import robocode.*;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
-import static robocode.Rules. *;
-//import static robocode.Rules.getBulletSpeed;
 
 
 /**
  *
  * @author speed
  */
-public class RoboCorner extends TeamRobot  {
+public class RoboCorner extends AdvancedRobot{
+    public void run(){
+        // Modifiquem el color del robot
+        setBodyColor(Color.black);
+        setGunColor(Color.black);
+        setRadarColor(Color.black);
+        setBulletColor(Color.black);
+        setScanColor(Color.black);
 
-	boolean peek; // Don't turn if there's a robot there
-	double moveAmount; // How much to move
+        // Enviar posicio inicial al lider, i esperar posició a la que s'ha d'anar, i anar-hi
+        goTo(20, 20);
 
-	/**
-	 * run: Move around the walls
-	 */
-	public void run() {
-		// Set colors
-		setBodyColor(Color.black);
-		setGunColor(Color.black);
-		setRadarColor(Color.orange);
-		setBulletColor(Color.cyan);
-		setScanColor(Color.cyan);
+        while(true){
+            // Els robots es mous en voltant del taulell en sentit horari
+            voltes_al_taulell();
+        }
+    }
 
-		// Initialize moveAmount to the maximum possible for this battlefield.
-		moveAmount = Math.max(getBattleFieldWidth(), getBattleFieldHeight());
-		// Initialize peek to false
-		peek = false;
+    public void goTo(double X, double Y){
+        double mvx=X-getX(),mvy=Y-getY();
+        double distance = Math.sqrt(Math.pow(mvx,2)+Math.pow(mvy,2));
+        double headingg = Math.toDegrees(Math.atan(mvx/mvy));
+        if (Y <= getBattleFieldHeight()){
+            headingg+=180;
+        }
+        turnRight(headingg-getHeading());
+        ahead(distance);
+        //Movem el robot perque estigui en paral·lel amb el taulell
+        if(Y <= getBattleFieldHeight())turnLeft(getHeading()-270);
+        else turnRight(180-getHeading());
+        turnGunRight(45);
+    }
 
-		// turnLeft to face a wall.
-		// getHeading() % 90 means the remainder of
-		// getHeading() divided by 90.
-		turnLeft(getHeading() % 90);
-		ahead(moveAmount);
-		// Turn the gun to turn right 90 degrees.
-		peek = true;
-		turnGunRight(90);
-		turnRight(90);
+    public void voltes_al_taulell(){
+        // Els robots es mous en voltant del taulell en sentit horari
+        // El -23 serveix per a que el robot intenti no xocar amb la paret
+        Double maxHeight = getBattleFieldHeight() - 23;
+        Double maxWidth = getBattleFieldWidth() - 23;
 
-		while (true) {
-                        setTurnRadarRight(3600);
-                        execute();
-			// Look before we turn when ahead() completes.
-			peek = true;
-			// Move up the wall
-			ahead(moveAmount);
-			// Don't look now
-			peek = false;
-			// Turn to the next wall
-			turnRight(90);
-		}
-	}
-
-	/**
-	 * onHitRobot:  Move away a bit.
-	 */
-	public void onHitRobot(HitRobotEvent e) {
-		// If he's in front of us, set back up a bit.
-		if (e.getBearing() > -90 && e.getBearing() < 90) {
-			back(100);
-		} // else he's in back of us, so set ahead a bit.
-		else {
-			ahead(100);
-		}
-	}
-
-	/**
-	 * onScannedRobot:  Fire!
-	 */
-	public void onScannedRobot(ScannedRobotEvent e) {
-		if(!isTeammate(e.getName())){
-			Double enemyBearing = getHeading() + e.getBearing();
-            Double dx = e.getDistance() * Math.sin(Math.toRadians(enemyBearing));
-            Double dy = e.getDistance() * Math.cos(Math.toRadians(enemyBearing));
-            Double theta = Math.toDegrees(Math.atan2(dx, dy));
-            Double alpha = normalRelativeAngleDegrees(theta - getGunHeading());
-            turnGunRight(alpha);
-            fire(2);
-
-		// Note that scan is called automatically when the robot is moving.
-		// By calling it manually here, we make sure we generate another scan event if there's a robot on the next
-		// wall, so that we do not start moving up it until it's gone.
+        // Si ens trobem a alguna cantonada, realitzem un gir de 90º
+        if((getX() <= 21 && getY() <= 21 ) || (getX() <= 21 && getY() >= maxHeight) || (getX() >= maxWidth && getY() <= 21) || (getX() >= maxWidth && getY() >= maxHeight)){
+            turnRight(90);
+            // Fem un ahead, ja que di no el robot es quedaria en bucle infinit donant voltes ja que detectaria que esta sempre a una cantonada
+            ahead(10);
+        }
+        else{
+            // Mirem si ens trobem a la cantonada inferior esquerra o superior dreta, per aixi realitzar un moviment amb distancia igual a l'alçada del taulell
+            if(getX() <= 21 || getX() >= maxWidth){
+                Integer distancia = (int) ((getBattleFieldHeight() - 20) - getY());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
                 
-			if (peek) {
-				scan();
-			}
-		}
-	}
+            }
+
+            // Mirem si ens trobem a la cantonada superior esquerra o inferior dreta, per aixi realitzar un moviment amb distancia igual a l'amplada del taulell
+            else{
+                Integer distancia = (int) ((getBattleFieldWidth() - 20) - getX());  
+                setAhead(distancia);
+                execute();
+                turnGunRight(90);
+                turnGunLeft(90);
+            }         
+            
+        }
+
+        
+    }
 }
+    
