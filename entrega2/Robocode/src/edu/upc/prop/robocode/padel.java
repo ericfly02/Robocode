@@ -508,14 +508,14 @@ public class padel extends TeamRobot {
         goForReal(posicions.get(xi).getX(),posicions.get(xi).getY());
     }
     
-    public void centinella(){/*
+    public void centinella(){
         if(getX()<(getBattleFieldWidth()/2))
              turnRight(90-getHeading());
         else
             turnRight(270-getHeading());
          ahead(100);
          doNothing();
-         back(100);*/
+         back(100);
     }
 
 }
